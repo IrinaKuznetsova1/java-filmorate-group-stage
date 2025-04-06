@@ -2,13 +2,13 @@ package ru.yandex.practicum.filmorate.annotations;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import ru.yandex.practicum.filmorate.validators.minReleaseDateValidator;
+import ru.yandex.practicum.filmorate.validators.MinReleaseDateValidator;
 
 import java.lang.annotation.*;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = minReleaseDateValidator.class)
+@Constraint(validatedBy = MinReleaseDateValidator.class)
 @Documented
 public @interface MinReleaseDate {
 
