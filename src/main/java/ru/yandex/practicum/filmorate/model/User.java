@@ -21,7 +21,7 @@ public class User {
     private String email;
 
     @NotBlank(groups = Marker.OnCreate.class, message = "логин не должен быть пустым")
-    @NoSpaces(message = "логин не должен содержать пробелы")
+    @NoSpaces(message = "логин не должен содержать пробелы, переносы строки или табуляцию")
     private String login;
 
     private String name;

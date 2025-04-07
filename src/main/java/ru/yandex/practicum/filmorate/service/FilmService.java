@@ -21,10 +21,10 @@ public class FilmService extends Service<Film> {
             log.info("Фильм найден в в Map<Long, Film> savedObjects.");
             final Film oldFilm = savedObjects.get(newFilm.getId());
             // если поля не null и не 0, то обновляем их
-            if (!newFilm.getName().isBlank()) {
+            if (newFilm.getName() != null && !newFilm.getName().isBlank()) {
                 oldFilm.setName(newFilm.getName());
             }
-            if (!newFilm.getDescription().isBlank()) {
+            if (newFilm.getDescription() != null && !newFilm.getDescription().isBlank()) {
                 oldFilm.setDescription(newFilm.getDescription());
             }
             if (newFilm.getReleaseDate() != null) {

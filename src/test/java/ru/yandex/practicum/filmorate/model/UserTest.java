@@ -52,7 +52,7 @@ class UserTest {
         constraintViolations = validator.validate(user);
         assertThat(constraintViolations).hasSize(1);
 
-        user.setLogin("Login with spaces");
+        user.setLogin("LoginWithTab\t");
         constraintViolations = validator.validate(user);
         assertThat(constraintViolations).hasSize(2);
 
@@ -62,7 +62,7 @@ class UserTest {
 
         assertThat(constraintViolations).extracting(ConstraintViolation::getMessage).containsExactlyInAnyOrder(
                 "строка должна соответствовать формату адреса электронной почты",
-                "логин не должен содержать пробелы",
+                "логин не должен содержать пробелы, переносы строки или табуляцию",
                 "дата должна быть прошедшей"
         );
     }
