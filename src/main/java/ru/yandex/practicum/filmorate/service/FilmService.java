@@ -40,15 +40,15 @@ public class FilmService extends AbstractService<Film> {
     }
 
     public Film addLike(long id, long userId) {
-        userStorage.getById(userId); //если пользователь не найден, то userStorage выбросит исключение
-        final Film film = saveId(id, userId);
+        userStorage.getById(userId); //если пользователь не найден, то AbstractStorage.getById(long id) выбросит исключение
+        final Film film = saveId(id, userId); // если film с {id} не найден, то AbstractStorage.getById(long id) выбросит исключение
         log.info("Пользователь id {} поставил лайк фильму id {}.", userId, id);
         return film;
     }
 
     public Film deleteLike(long id, long userId) {
-        userStorage.getById(userId); //если пользователь не найден, то userStorage выбросит исключение
-        final Film film = removeId(id, userId);
+        userStorage.getById(userId); //если пользователь не найден, то AbstractStorage.getById(long id) выбросит исключение
+        final Film film = removeId(id, userId); // если film с {id} не найден, то AbstractStorage.getById(long id) выбросит исключение
         log.info("Пользователь id {} удалил лайк у фильма id {}.", userId, id);
         return film;
     }

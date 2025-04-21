@@ -46,11 +46,10 @@ public class UserService extends AbstractService<User> {
         log.info("Пользователь найден в в Map<Long, User> users.");
         // если поля не null, то обновляем их
         if (isNotNullAndIsNotBlank(newUser.getEmail()) && !newUser.getEmail().equals(oldUser.getEmail())) {
-            // проверка дублирования e-mail не проходит тесты файла postman.json, прикрепленного к техническому заданию №11
-                /*if (emailIsDuplicated(newUser.getEmail())) {
+                if (emailIsDuplicated(newUser.getEmail())) {
                     log.warn("E-mail: {} уже используется.", newUser.getEmail());
                     throw new DuplicatedDataException("email", "E-mail: " + newUser.getEmail() + " уже используется.");
-                }*/
+                }
             oldUser.setEmail(newUser.getEmail());
         }
         if (isNotNullAndIsNotBlank(newUser.getLogin()))
@@ -69,14 +68,16 @@ public class UserService extends AbstractService<User> {
             log.warn("Выброшено исключение DuplicatedDataException, пользователь с id:{} не может добавить самого себя в друзья.", id);
             throw new DuplicatedDataException("id", "Пользователь не может добавить самого себя в друзья.");
         }
-        final User user = saveId(id, friendId);
+        storage.getById(friendId); // если user c {friendId} не найден, то AbstractStorage.getById(long id) выбросит исключение
+        final User user = saveId(id, friendId); // если user с {id} не найден, то AbstractStorage.getById(long id) выбросит исключение
         saveId(friendId, id);
         log.info("Пользователь id {} добавил в друзья пользователя с id {}.", id, friendId);
         return user;
     }
 
     public User deleteFriend(long id, long friendId) {
-        final User user = removeId(id, friendId);
+        storage.getById(friendId); // если user c {friendId} не найден, то AbstractStorage.getById(long id) выбросит исключение
+        final User user = removeId(id, friendId); // если user с {id} не найден, то AbstractStorage.getById(long id) выбросит исключение
         removeId(friendId, id);
         log.info("Пользователь id {} удалил из друзей пользователя с id {}.", id, friendId);
         return user;
