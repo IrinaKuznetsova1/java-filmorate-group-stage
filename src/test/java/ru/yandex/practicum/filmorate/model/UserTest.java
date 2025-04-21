@@ -23,7 +23,7 @@ class UserTest {
 
     @BeforeEach
     void createUser() {
-        user = new User(1, "test@mail.com", "TestLogin", "Test Name", LocalDate.MIN);
+        user = new User(1,"test@mail.com", "TestLogin", "Test Name", LocalDate.MIN);
     }
 
     @Test

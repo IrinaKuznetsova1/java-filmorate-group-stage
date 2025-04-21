@@ -1,43 +1,65 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.Collection;
+import java.util.Comparator;
+
+@Service
 @Slf4j
-public class FilmService extends Service<Film> {
+public class FilmService extends AbstractService<Film> {
+    private final UserStorage userStorage;
+
+    @Autowired
+    public FilmService(InMemoryFilmStorage filmStorage, InMemoryUserStorage userStorage) {
+        storage = filmStorage;
+        this.userStorage = userStorage;
+    }
 
     @Override
-    public Film save(Film film) {
-        film.setId(getNextId());
-        savedObjects.put(film.getId(), film);
-        log.info("Фильм сохранен в Map<Long, Film> savedObjects.");
+    public Film update(Film newFilm) {
+        final Film oldFilm = findById(newFilm.getId());
+        log.info("Фильм найден в в Map<Long, Film> films.");
+        // если поля не null и не 0, то обновляем их
+        if (isNotNullAndIsNotBlank(newFilm.getName()))
+            oldFilm.setName(newFilm.getName());
+        if (isNotNullAndIsNotBlank(newFilm.getDescription()))
+            oldFilm.setDescription(newFilm.getDescription());
+        if (newFilm.getReleaseDate() != null)
+            oldFilm.setReleaseDate(newFilm.getReleaseDate());
+        if (newFilm.getDuration() > 0)
+            oldFilm.setDuration(newFilm.getDuration());
+        log.info("Обновление фильма завершено.");
+        return oldFilm;
+    }
+
+    public Film addLike(long id, long userId) {
+        userStorage.getById(userId); //если пользователь не найден, то userStorage выбросит исключение
+        final Film film = saveId(id, userId);
+        log.info("Пользователь id {} поставил лайк фильму id {}.", userId, id);
         return film;
     }
 
-    @Override
-    public Film updateFields(Film newFilm) {
-        if (savedObjects.containsKey(newFilm.getId())) {
-            log.info("Фильм найден в в Map<Long, Film> savedObjects.");
-            final Film oldFilm = savedObjects.get(newFilm.getId());
-            // если поля не null и не 0, то обновляем их
-            if (newFilm.getName() != null && !newFilm.getName().isBlank()) {
-                oldFilm.setName(newFilm.getName());
-            }
-            if (newFilm.getDescription() != null && !newFilm.getDescription().isBlank()) {
-                oldFilm.setDescription(newFilm.getDescription());
-            }
-            if (newFilm.getReleaseDate() != null) {
-                oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            }
-            if (newFilm.getDuration() > 0) {
-                oldFilm.setDuration(newFilm.getDuration());
-            }
-            log.info("Обновление фильма завершено.");
-            return oldFilm;
-        } else {
-            log.warn("Выброшено исключение NotFoundException, фильм с id:{} не найден.", newFilm.getId());
-            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден.");
-        }
+    public Film deleteLike(long id, long userId) {
+        userStorage.getById(userId); //если пользователь не найден, то userStorage выбросит исключение
+        final Film film = removeId(id, userId);
+        log.info("Пользователь id {} удалил лайк у фильма id {}.", userId, id);
+        return film;
     }
+
+    public Collection<Film> findTheMostPopular(long count) {
+        log.info("Поиск самых популярных фильмов, количество: {}.", count);
+        return findAll()
+                .stream()
+                .sorted(Comparator.comparing(Film::getNumberOfIds).reversed())
+                .limit(count)
+                .toList();
+    }
+
 }

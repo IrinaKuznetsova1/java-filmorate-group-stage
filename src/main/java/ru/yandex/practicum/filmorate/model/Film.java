@@ -2,8 +2,9 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.annotations.Marker;
 import ru.yandex.practicum.filmorate.annotations.MinReleaseDate;
 
@@ -13,12 +14,10 @@ import java.time.LocalDate;
  * Film.
  */
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@AllArgsConstructor
-public class Film {
-    @Positive(groups = Marker.OnUpdate.class, message = "id должен быть указан и быть больше нуля")
-    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
-    private long id;
+@Slf4j
+public class Film extends StorageData {
 
     @NotBlank(groups = Marker.OnCreate.class, message = "имя не должно быть пустым")
     private String name;
@@ -35,4 +34,12 @@ public class Film {
     @Positive(groups = Marker.OnCreate.class, message = "продолжительность должна быть больше 0")
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     private int duration;
+
+    public Film(long id, String name, String description, LocalDate releaseDate, int duration) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+    }
 }
