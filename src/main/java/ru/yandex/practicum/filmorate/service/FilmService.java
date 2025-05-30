@@ -2,25 +2,46 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Comparator;
 
 @Service
 @Slf4j
-public class FilmService extends AbstractService<Film> {
+
+public class FilmService implements ru.yandex.practicum.filmorate.service.Service<Film> {
+    private final FilmStorage storage;
     private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(InMemoryFilmStorage filmStorage, InMemoryUserStorage userStorage) {
-        storage = filmStorage;
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage) {
+        this.storage = filmStorage;
         this.userStorage = userStorage;
     }
+
+    @Override
+    public Collection<Film> findAll() {
+        return storage.getAll();
+    }
+
+    @Override
+    public Film findById(long id) {
+        return storage.getById(id);
+    }
+
+    @Override
+    public Film create(Film film) {
+        return storage.save(film);
+    }
+
+    private boolean isNotNullAndIsNotBlank(String field) {
+        return field != null && !field.isBlank();
+    }
+
 
     @Override
     public Film update(Film newFilm) {
@@ -35,31 +56,33 @@ public class FilmService extends AbstractService<Film> {
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
         if (newFilm.getDuration() > 0)
             oldFilm.setDuration(newFilm.getDuration());
+        if (newFilm.getMpa() != null)
+            oldFilm.setMpa(newFilm.getMpa());
+        if (!newFilm.getGenres().isEmpty())
+            newFilm.getGenres().forEach(oldFilm::addGenre);
+        storage.saveUpdatedObject(oldFilm);
         log.info("Обновление фильма завершено.");
         return oldFilm;
     }
 
-    public Film addLike(long id, long userId) {
-        userStorage.getById(userId); //если пользователь не найден, то AbstractStorage.getById(long id) выбросит исключение
-        final Film film = saveId(id, userId); // если film с {id} не найден, то AbstractStorage.getById(long id) выбросит исключение
-        log.info("Пользователь id {} поставил лайк фильму id {}.", userId, id);
-        return film;
+    public Film addLike(long filmId, long userId) {
+        findById(filmId);
+        userStorage.getById(userId);
+        storage.saveId(filmId, userId);
+        return findById(filmId);
     }
 
-    public Film deleteLike(long id, long userId) {
-        userStorage.getById(userId); //если пользователь не найден, то AbstractStorage.getById(long id) выбросит исключение
-        final Film film = removeId(id, userId); // если film с {id} не найден, то AbstractStorage.getById(long id) выбросит исключение
-        log.info("Пользователь id {} удалил лайк у фильма id {}.", userId, id);
-        return film;
+    public Film deleteLike(long filmId, long userId) {
+        findById(filmId);
+        userStorage.getById(userId);
+        storage.removeId(filmId, userId);
+        log.info("Пользователь id {} удалил лайк у фильма id {}.", userId, filmId);
+        return findById(filmId);
     }
 
     public Collection<Film> findTheMostPopular(long count) {
         log.info("Поиск самых популярных фильмов, количество: {}.", count);
-        return findAll()
-                .stream()
-                .sorted(Comparator.comparing(Film::getNumberOfIds).reversed())
-                .limit(count)
-                .toList();
+        return storage.findTheMostPopular(count);
     }
 
 }

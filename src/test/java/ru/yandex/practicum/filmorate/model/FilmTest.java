@@ -23,7 +23,7 @@ class FilmTest {
 
     @BeforeEach
     void createFilm() {
-        film = new Film(1,"test Title", "Test Description", LocalDate.now(), 100);
+        film = new Film(1,"test Title", "Test Description", LocalDate.now(), 100, new Mpa(1));
     }
 
     @Test
