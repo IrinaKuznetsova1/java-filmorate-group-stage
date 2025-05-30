@@ -6,10 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 
@@ -18,9 +15,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class ErrorHandlingControllerAdvice {
-    @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ValidationErrorResponse onMethodArgumentNotValidException(MethodArgumentNotValidException e) {
@@ -31,7 +27,6 @@ public class ErrorHandlingControllerAdvice {
         return new ValidationErrorResponse(violations);
     }
 
-    @ResponseBody
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ValidationErrorResponse onConstraintValidationException(ConstraintViolationException e) {
@@ -44,21 +39,18 @@ public class ErrorHandlingControllerAdvice {
         return new ValidationErrorResponse(violations);
     }
 
-    @ResponseBody
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Violation> onNotFoundException(NotFoundException e) {
         log.warn("Обработка исключения NotFoundException: {}", e.getMessage());
         return new ResponseEntity<>(new Violation("id", e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
-    @ResponseBody
     @ExceptionHandler(DuplicatedDataException.class)
     public ResponseEntity<Violation> onDuplicatedDataException(DuplicatedDataException e) {
         log.warn("Обработка исключения DuplicatedDataException: {}", e.getMessage());
-        return new ResponseEntity<>(new Violation("E-mail", e.getMessage()), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new Violation(e.getFieldsName(), e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
-    @ResponseBody
     @ExceptionHandler(DateTimeParseException.class)
     public ResponseEntity<Violation> onDateTimeParseException(DateTimeParseException e) {
         log.warn("Обработка исключения DateTimeParseException: {}", e.getMessage());
@@ -66,10 +58,15 @@ public class ErrorHandlingControllerAdvice {
                 "'yyyy-MM-dd'"), HttpStatus.BAD_REQUEST);
     }
 
-    @ResponseBody
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<String> onHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         log.warn("Обработка исключения HttpMessageNotReadableException: {}", e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> onRuntimeException(RuntimeException e) {
+        log.warn("Обработка исключения RuntimeException: {}", e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -1,62 +1,104 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
 @Slf4j
-public class UserService extends Service<User> {
+public class UserService extends AbstractService<User> {
+
+    @Autowired
+    public UserService(InMemoryUserStorage storage) {
+        this.storage = storage;
+    }
 
     @Override
-    public User save(User user) {
+    public User create(User user) {
         if (emailIsDuplicated(user.getEmail())) {
             log.warn("E-mail: {} уже используется.", user.getEmail());
-            throw new DuplicatedDataException("E-mail: " + user.getEmail() + " уже используется.");
+            throw new DuplicatedDataException("email", "E-mail: " + user.getEmail() + " уже используется.");
         }
-        user.setId(getNextId());
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        savedObjects.put(user.getId(), user);
-        log.info("Пользователь сохранен в Map<Long, User> savedObjects.");
+        super.create(user);
         return user;
     }
 
-    @Override
-    public User updateFields(User newUser) {
-        if (savedObjects.containsKey(newUser.getId())) {
-            log.info("Пользователь найден в в Map<Long, User> savedObjects.");
-            final User oldUser = savedObjects.get(newUser.getId());
-            // если поля не null, то обновляем их
-            if (newUser.getEmail() != null && !newUser.getEmail().isBlank() && !newUser.getEmail().equals(oldUser.getEmail())) {
-                if (emailIsDuplicated(newUser.getEmail())) {
-                    log.warn("E-mail: {} уже используется.", newUser.getEmail());
-                    throw new DuplicatedDataException("E-mail: " + newUser.getEmail() + " уже используется.");
-                }
-                oldUser.setEmail(newUser.getEmail());
-            }
-            if (newUser.getLogin() != null && !newUser.getLogin().isBlank() && !newUser.getLogin().contains(" ")) {
-                oldUser.setLogin(newUser.getLogin());
-            }
-            if (newUser.getName() != null && !newUser.getName().isBlank()) {
-                oldUser.setName(newUser.getName());
-            }
-            if (newUser.getBirthday() != null) {
-                oldUser.setBirthday(newUser.getBirthday());
-            }
-            log.info("Обновление пользователя завершено.");
-            return oldUser;
-        } else {
-            log.warn("Выброшено исключение NotFoundException, пользователь с id:{} не найден.", newUser.getId());
-            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден.");
-        }
-    }
-
     private boolean emailIsDuplicated(String email) {
-        return savedObjects.values()
+        return findAll()
                 .stream()
                 .map(User::getEmail)
                 .anyMatch(str -> str.equals(email));
+    }
+
+    @Override
+    public User update(User newUser) {
+        final User oldUser = findById(newUser.getId());
+        log.info("Пользователь найден в в Map<Long, User> users.");
+        // если поля не null, то обновляем их
+        if (isNotNullAndIsNotBlank(newUser.getEmail()) && !newUser.getEmail().equals(oldUser.getEmail())) {
+                if (emailIsDuplicated(newUser.getEmail())) {
+                    log.warn("E-mail: {} уже используется.", newUser.getEmail());
+                    throw new DuplicatedDataException("email", "E-mail: " + newUser.getEmail() + " уже используется.");
+                }
+            oldUser.setEmail(newUser.getEmail());
+        }
+        if (isNotNullAndIsNotBlank(newUser.getLogin()))
+            oldUser.setLogin(newUser.getLogin());
+        if (isNotNullAndIsNotBlank(newUser.getName()))
+            oldUser.setName(newUser.getName());
+        if (newUser.getBirthday() != null) {
+            oldUser.setBirthday(newUser.getBirthday());
+        }
+        log.info("Обновление пользователя завершено.");
+        return oldUser;
+    }
+
+    public User addFriend(long id, long friendId) {
+        if (id == friendId) {
+            log.warn("Выброшено исключение DuplicatedDataException, пользователь с id:{} не может добавить самого себя в друзья.", id);
+            throw new DuplicatedDataException("id", "Пользователь не может добавить самого себя в друзья.");
+        }
+        storage.getById(friendId); // если user c {friendId} не найден, то AbstractStorage.getById(long id) выбросит исключение
+        final User user = saveId(id, friendId); // если user с {id} не найден, то AbstractStorage.getById(long id) выбросит исключение
+        saveId(friendId, id);
+        log.info("Пользователь id {} добавил в друзья пользователя с id {}.", id, friendId);
+        return user;
+    }
+
+    public User deleteFriend(long id, long friendId) {
+        storage.getById(friendId); // если user c {friendId} не найден, то AbstractStorage.getById(long id) выбросит исключение
+        final User user = removeId(id, friendId); // если user с {id} не найден, то AbstractStorage.getById(long id) выбросит исключение
+        removeId(friendId, id);
+        log.info("Пользователь id {} удалил из друзей пользователя с id {}.", id, friendId);
+        return user;
+    }
+
+    public Collection<User> findUsersFriends(long id) {
+        log.info("Поиск друзей у пользователя: {}.", id);
+        return findById(id).getSavedIds()
+                .stream()
+                .map(this::findById)
+                .collect(Collectors.toList());
+    }
+
+    public Collection<User> findCommonFriends(long id, long otherId) {
+        log.info("Поиск общих друзей у пользователей: {}, {}.", id, otherId);
+        final Set<Long> usersFriends = findById(id).getSavedIds();
+        final Set<Long> otherUsersFriends = findById(otherId).getSavedIds();
+        usersFriends.retainAll(otherUsersFriends);
+        return usersFriends
+                .stream()
+                .map(this::findById)
+                .toList();
     }
 }
