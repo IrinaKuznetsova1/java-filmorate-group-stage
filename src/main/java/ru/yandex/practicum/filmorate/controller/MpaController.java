@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.dao.MpaDbStorage;
+import ru.yandex.practicum.filmorate.dto.MpaDto;
+import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.Collection;
 
@@ -19,17 +19,17 @@ import java.util.Collection;
 @Slf4j
 @RequiredArgsConstructor
 public class MpaController {
-    private final MpaDbStorage mpaDb;
+    private final MpaService mpaService;
 
     @GetMapping
-    public Collection<Mpa> findAll() {
+    public Collection<MpaDto> findAll() {
         log.info("Получен запрос GET/mpa.");
-        return mpaDb.getAll();
+        return mpaService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Mpa findMpaById(@PathVariable @Min(1) long id) {
+    public MpaDto findMpaById(@PathVariable @Min(1) long id) {
         log.info("Получен запрос GET/mpa/{}.", id);
-        return mpaDb.getById(id);
+        return mpaService.findById(id);
     }
 }

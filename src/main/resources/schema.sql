@@ -7,13 +7,13 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS friends (
-    id bigint primary key auto_increment,
     user_id bigint REFERENCES users(id),
-    friend_id bigint REFERENCES users(id)
+    friend_id bigint REFERENCES users(id),
+    PRIMARY KEY (user_id, friend_id)
 );
 
 CREATE TABLE IF NOT EXISTS genres (
-    id bigint primary key auto_increment,
+    id integer primary key auto_increment,
     name varchar(150) NOT NULL UNIQUE
 );
 
@@ -32,14 +32,14 @@ CREATE TABLE IF NOT EXISTS films (
 );
 
 CREATE TABLE IF NOT EXISTS likes (
-    id bigint primary key auto_increment,
     film_id bigint REFERENCES films(id),
-    user_id bigint REFERENCES users(id)
+    user_id bigint REFERENCES users(id),
+    PRIMARY KEY (film_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS film_genre (
-    id bigint primary key auto_increment,
     film_id bigint REFERENCES films(id),
-    genre_id bigint REFERENCES genres(id)
+    genre_id integer REFERENCES genres(id),
+    PRIMARY KEY (film_id, genre_id)
 );
 

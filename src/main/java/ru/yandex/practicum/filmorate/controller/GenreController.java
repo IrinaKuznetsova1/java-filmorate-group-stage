@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.dao.GenreDbStorage;
+import ru.yandex.practicum.filmorate.dto.GenreDto;
+import ru.yandex.practicum.filmorate.service.GenreService;
 
 import java.util.Collection;
 
@@ -19,17 +19,17 @@ import java.util.Collection;
 @Slf4j
 @RequiredArgsConstructor
 public class GenreController {
-    private final GenreDbStorage genreDb;
+    private final GenreService genreService;
 
     @GetMapping
-    public Collection<Genre> findAll() {
+    public Collection<GenreDto> findAll() {
         log.info("Получен запрос GET/genres.");
-        return genreDb.getAll();
+        return genreService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Genre findGenreById(@PathVariable @Min(1) long id) {
+    public GenreDto findGenreById(@PathVariable @Min(1) int id) {
         log.info("Получен запрос GET/genres/{}.", id);
-        return genreDb.getById(id);
+        return genreService.findById(id);
     }
 }

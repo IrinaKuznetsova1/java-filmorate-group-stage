@@ -8,6 +8,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class Genre {
     @Positive(message = "id должен быть указан и быть больше нуля")
-    private long id;
+    private int id;
     private String name;
 }

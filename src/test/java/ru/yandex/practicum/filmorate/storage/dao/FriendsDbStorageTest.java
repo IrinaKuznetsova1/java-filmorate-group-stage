@@ -60,13 +60,12 @@ class FriendsDbStorageTest {
 
     @Test
     void getByFriendsId() {
-        final Optional<LineData> friends = friendsDbStorage.getByFriendsId(user1.getId(), user2.getId());
-        assertThat(friends).isPresent();
-        assertThat(friends.get()).hasFieldOrPropertyWithValue("id1", user1.getId());
-        assertThat(friends.get()).hasFieldOrPropertyWithValue("id2", user2.getId());
+        final Optional<Long> friend = friendsDbStorage.getByFriendsId(user1.getId(), user2.getId());
+        assertThat(friend).isPresent();
+        assertThat(friend.get()).isEqualTo(user2.getId());
 
-        final Optional<LineData> friendsEmpty = friendsDbStorage.getByFriendsId(200, user2.getId());
-        assertThat(friendsEmpty).isEmpty();
+        final Optional<Long> friendEmpty = friendsDbStorage.getByFriendsId(200, user2.getId());
+        assertThat(friendEmpty).isEmpty();
     }
 
     @Test

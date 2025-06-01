@@ -36,7 +36,7 @@ class FilmGenreDbStorageTest {
     private final FilmDbStorage filmDBStorage;
     private final JdbcTemplate jdbc;
 
-    private final Film film1 = new Film(1,"name1", "description1", LocalDate.now(), 60, new Mpa(1, "G"));
+    private final Film film1 = new Film(1, "name1", "description1", LocalDate.now(), 60, new Mpa(1, "G"));
     private final Genre genre1 = new Genre(1, "Комедия");
     private final Genre genre2 = new Genre(3, "Мультфильм");
     private final Genre genre3 = new Genre(5, "Документальный");
@@ -71,12 +71,11 @@ class FilmGenreDbStorageTest {
 
     @Test
     void getByIds() {
-        final Optional<LineData> genre = filmGenreDbStorage.getByIds(film1.getId(), genre1.getId());
+        final Optional<Integer> genre = filmGenreDbStorage.getByIds(film1.getId(), genre1.getId());
         assertThat(genre).isPresent();
-        assertThat(genre.get()).hasFieldOrPropertyWithValue("id1", film1.getId());
-        assertThat(genre.get()).hasFieldOrPropertyWithValue("id2", genre1.getId());
+        assertThat(genre.get()).isEqualTo(genre1.getId());
 
-        final Optional<LineData> genreEmpty = filmGenreDbStorage.getByIds(200, genre1.getId());
+        final Optional<Integer> genreEmpty = filmGenreDbStorage.getByIds(200, genre1.getId());
         assertThat(genreEmpty).isEmpty();
     }
 

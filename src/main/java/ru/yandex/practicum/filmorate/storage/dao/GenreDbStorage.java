@@ -25,14 +25,14 @@ public class GenreDbStorage extends BaseDbStorage<Genre> {
         return findMany(FIND_ALL_QUERY);
     }
 
-    public Genre getById(long id) {
+    public Genre getById(int id) {
         Optional<Genre> genreOptional = findOne(FIND_BY_ID_QUERY, id);
         if (genreOptional.isEmpty())
             throw new NotFoundException("Жанр с id: " + id + " не найден.");
         return genreOptional.get();
     }
 
-    public String getNameById(long id) {
+    public String getNameById(int id) {
         Optional<Genre> genreOptional = findOne(FIND_BY_ID_QUERY, id);
         if (genreOptional.isEmpty())
             throw new NotFoundException("Жанр с id: " + id + " не найден.");

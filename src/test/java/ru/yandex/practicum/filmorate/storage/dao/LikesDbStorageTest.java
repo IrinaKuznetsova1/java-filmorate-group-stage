@@ -39,7 +39,7 @@ class LikesDbStorageTest {
     private final UserDbStorage userDbStorage;
     private final JdbcTemplate jdbc;
 
-    private final Film film1 = new Film(1,"name1", "description1", LocalDate.now(), 60, new Mpa(1, "G"));
+    private final Film film1 = new Film(1, "name1", "description1", LocalDate.now(), 60, new Mpa(1, "G"));
 
     private final User user1 = new User(1, "test1@mail.ru", "Login1", "Name1", LocalDate.now());
     private final User user2 = new User(2, "test2@mail.ru", "Login2", "Name2", LocalDate.now());
@@ -71,12 +71,11 @@ class LikesDbStorageTest {
 
     @Test
     void getByIds() {
-        final Optional<LineData> like = likesDbStorage.getByIds(film1.getId(), user1.getId());
+        final Optional<Long> like = likesDbStorage.getByIds(film1.getId(), user1.getId());
         assertThat(like).isPresent();
-        assertThat(like.get()).hasFieldOrPropertyWithValue("id1", film1.getId());
-        assertThat(like.get()).hasFieldOrPropertyWithValue("id2", user1.getId());
+        assertThat(like.get()).isEqualTo(user1.getId());
 
-        final Optional<LineData> likeEmpty = likesDbStorage.getByIds(200, user1.getId());
+        final Optional<Long> likeEmpty = likesDbStorage.getByIds(200, user1.getId());
         assertThat(likeEmpty).isEmpty();
     }
 

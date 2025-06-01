@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import java.util.Collection;
 
-public interface Service<T> {
+public interface IntService<T> {
     Collection<T> findAll();
 
     T findById(long id);

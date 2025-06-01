@@ -12,8 +12,7 @@ import java.util.Collection;
 
 @Service
 @Slf4j
-
-public class FilmService implements ru.yandex.practicum.filmorate.service.Service<Film> {
+public class FilmService implements IntService<Film> {
     private final FilmStorage storage;
     private final UserStorage userStorage;
 

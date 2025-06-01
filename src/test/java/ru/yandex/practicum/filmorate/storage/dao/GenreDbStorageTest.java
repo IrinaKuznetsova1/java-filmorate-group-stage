@@ -29,7 +29,7 @@ class GenreDbStorageTest {
     @Test
     void getById() {
         final Genre genre = genreDbStorage.getById(3);
-        assertThat(genre).hasFieldOrPropertyWithValue("id", 3L);
+        assertThat(genre).hasFieldOrPropertyWithValue("id", 3);
     }
 
     @Test

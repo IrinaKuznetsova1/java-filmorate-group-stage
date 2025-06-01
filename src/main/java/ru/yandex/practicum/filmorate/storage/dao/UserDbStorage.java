@@ -47,8 +47,7 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     @Override
     public Collection<User> getAll() {
         final Collection<User> users = findMany(FIND_ALL_QUERY);
-        if (!users.isEmpty())
-            users.forEach(this::addFriends);
+        users.forEach(this::addFriends);
         return users;
     }
 
@@ -110,16 +109,14 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     @Override
     public Collection<User> findUsersFriends(long id) {
         final Collection<User> friends = findMany(FIND_USERS_FRIENDS_QUERY, id);
-        if (!friends.isEmpty())
-            friends.forEach(this::addFriends);
+        friends.forEach(this::addFriends);
         return friends;
     }
 
     @Override
     public Collection<User> findCommonFriends(long id, long otherId) {
         final Collection<User> commonFriends = findMany(FIND_COMMON_QUERY, id, otherId);
-        if (!commonFriends.isEmpty())
-            commonFriends.forEach(this::addFriends);
+        commonFriends.forEach(this::addFriends);
         return commonFriends;
     }
 

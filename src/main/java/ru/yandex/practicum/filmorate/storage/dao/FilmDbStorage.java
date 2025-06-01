@@ -60,16 +60,14 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     }
 
     private Film addLikes(Film film) {
-        if (!likesDb.getAllByFilmId(film.getId()).isEmpty())
-            likesDb.getAllByFilmId(film.getId())
-                    .forEach(film::saveId);
+        likesDb.getAllByFilmId(film.getId())
+                .forEach(film::saveId);
         return film;
     }
 
     private void addGenres(Film film) {
-        if (!filmGenreDb.getAllByFilmId(film.getId()).isEmpty())
-            filmGenreDb.getAllByFilmId(film.getId())
-                    .forEach(film::addGenre);
+        filmGenreDb.getAllByFilmId(film.getId())
+                .forEach(film::addGenre);
     }
 
     @Override
@@ -90,10 +88,8 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         film.setMpa(mpaDb.getById(film.getMpa().getId()));
 
         //проверка списка genres
-        if (!film.getGenres().isEmpty()) {
-            film.getGenres().forEach(
-                    genre -> genre.setName(genreDb.getNameById(genre.getId()))); //getNameById() проверит корректность genre.id и вернет genre.name
-        }
+        film.getGenres().forEach(
+                genre -> genre.setName(genreDb.getNameById(genre.getId()))); //getNameById() проверит корректность genre.id и вернет genre.name
         //добавить фильм в films
         final long id = insert(
                 INSERT_QUERY,
@@ -105,8 +101,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         );
         film.setId(id);
         //добавить в film_genre после добавления в film, так как нужен film_id
-        if (!film.getGenres().isEmpty())
-            film.getGenres().forEach(genre -> filmGenreDb.saveId(film.getId(), genre.getId()));
+        film.getGenres().forEach(genre -> filmGenreDb.saveId(film.getId(), genre.getId()));
 
         log.info("Объект сохранен в таблицу films.");
         return film;
@@ -153,13 +148,11 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public Collection<Film> findTheMostPopular(long count) {
         final Collection<Film> films = findMany(FIND_MOST_POPULAR_QUERY, count);
-        if (!films.isEmpty()) {
-            films.forEach(film -> {
-                addLikes(film);
-                addGenres(film);
-                film.setMpa(mpaDb.getById(film.getMpa().getId()));
-            });
-        }
+        films.forEach(film -> {
+            addLikes(film);
+            addGenres(film);
+            film.setMpa(mpaDb.getById(film.getMpa().getId()));
+        });
         return films;
     }
 }

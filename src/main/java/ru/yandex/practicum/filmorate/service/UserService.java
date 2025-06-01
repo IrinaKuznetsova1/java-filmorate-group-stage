@@ -12,7 +12,7 @@ import java.util.Collection;
 
 @Service
 @Slf4j
-public class UserService implements ru.yandex.practicum.filmorate.service.Service<User> {
+public class UserService implements IntService<User> {
     private final UserStorage storage;
 
     @Autowired
