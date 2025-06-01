@@ -107,7 +107,7 @@ class FilmDbStorageTest {
         assertThat(film.getMpa().getName()).isEqualTo(film4.getMpa().getName());
         assertThat(film.getGenres().size()).isEqualTo(film4.getGenres().size());
         final Genre genre = film.getGenres().stream().toList().getFirst();
-        assertThat(genre).hasFieldOrPropertyWithValue("id", 5L);
+        assertThat(genre).hasFieldOrPropertyWithValue("id", 5);
         assertThat(genre).hasFieldOrPropertyWithValue("name", "Документальный");
         assertThat(film.getIds().size()).isEqualTo(1);
 
