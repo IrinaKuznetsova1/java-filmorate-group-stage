@@ -9,16 +9,13 @@ import ru.yandex.practicum.filmorate.annotations.Marker;
 import ru.yandex.practicum.filmorate.annotations.MinReleaseDate;
 
 import java.time.LocalDate;
-
-/**
- * Film.
- */
+import java.util.HashSet;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Slf4j
 public class Film extends StorageData {
-
     @NotBlank(groups = Marker.OnCreate.class, message = "имя не должно быть пустым")
     private String name;
 
@@ -35,11 +32,21 @@ public class Film extends StorageData {
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     private int duration;
 
-    public Film(long id, String name, String description, LocalDate releaseDate, int duration) {
+    @NotNull(groups = Marker.OnCreate.class, message = "возрастной рейтинг должен быть указан")
+    private Mpa mpa;
+
+    private Set<Genre> genres = new HashSet<>();
+
+    public Film(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
+        this.mpa = mpa;
+    }
+
+    public void addGenre(Genre genre) {
+        genres.add(genre);
     }
 }

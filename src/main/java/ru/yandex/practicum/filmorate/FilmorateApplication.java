@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 @SpringBootApplication
 public class FilmorateApplication {
 
-	public static void main(String[] args) {
-		((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
-		SpringApplication.run(FilmorateApplication.class, args);
-		log.info("Запущено приложение 'FilmorateApplication'.");
-	}
+    public static void main(String[] args) {
+        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.DEBUG);
+        SpringApplication.run(FilmorateApplication.class, args);
+        log.info("Запущено приложение 'FilmorateApplication'.");
+    }
 }

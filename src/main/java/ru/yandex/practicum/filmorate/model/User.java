@@ -14,7 +14,6 @@ import java.time.LocalDate;
 @Data
 @Slf4j
 public class User extends StorageData {
-
     @NotBlank(groups = Marker.OnCreate.class, message = "e-mail не должен быть null или быть пустым")
     @Email(message = "строка должна соответствовать формату адреса электронной почты")
     private String email;
