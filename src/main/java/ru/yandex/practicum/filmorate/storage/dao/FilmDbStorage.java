@@ -26,17 +26,17 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
     private static final String FIND_MOST_POPULAR_QUERY = "SELECT * FROM films AS f " +
-            "RIGHT JOIN ( " +
-               "SELECT film_id " +
+            "LEFT JOIN ( " +
+               "SELECT film_id, COUNT(user_id) AS count_likes " +
                 "FROM likes " +
-                "GROUP BY FILM_ID " +
-                "ORDER BY COUNT(user_id) DESC) AS mp " +
+                "GROUP BY FILM_ID ) AS mp " +
             "ON mp.film_id = f.id " +
             "WHERE (? IS NULL OR EXTRACT (YEAR from f.releaseDate) = ?) " +
             "AND f.id IN ( " +
                 "SELECT film_id " +
                 "FROM film_genre " +
                 "WHERE ? IS NULL OR genre_id = ?) " +
+            "ORDER BY mp.count_likes DESC "+
             "LIMIT ?";
     private static final String INSERT_QUERY = "INSERT INTO films(name, description, releaseDate, duration, MPA_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, releaseDate = ?, " +
