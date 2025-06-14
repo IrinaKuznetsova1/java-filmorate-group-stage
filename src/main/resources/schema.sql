@@ -50,3 +50,18 @@ CREATE TABLE IF NOT EXISTS film_genre (
     PRIMARY KEY (film_id, genre_id)
 );
 
+CREATE TABLE IF NOT EXISTS reviews (
+    review_id bigint primary key auto_increment,
+    content varchar(200) NOT NULL,
+    is_positive boolean NOT NULL,
+    user_id bigint REFERENCES users(id),
+    film_id bigint REFERENCES films(id)
+);
+
+
+CREATE TABLE IF NOT EXISTS useful_tab (
+    review_id bigint REFERENCES reviews(review_id),
+    user_id bigint REFERENCES users(id),
+    useful_flag integer NOT NULL
+);
+

@@ -64,9 +64,9 @@ class FilmGenreDbStorageTest {
 
         final List<Genre> genres = filmGenreDbStorage.getAllByFilmId(film1.getId()).stream().toList();
         assertThat(genres.size()).isEqualTo(3);
-        assertThat(genres.getFirst()).hasFieldOrPropertyWithValue("id", genre1.getId());
+        assertThat(genres.get(0)).hasFieldOrPropertyWithValue("id", genre1.getId());
         assertThat(genres.get(1)).hasFieldOrPropertyWithValue("id", genre2.getId());
-        assertThat(genres.getLast()).hasFieldOrPropertyWithValue("id", genre3.getId());
+        assertThat(genres.get(genres.size() - 1)).hasFieldOrPropertyWithValue("id", genre3.getId());
     }
 
     @Test
