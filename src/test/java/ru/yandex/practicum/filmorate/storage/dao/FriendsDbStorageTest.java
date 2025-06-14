@@ -39,6 +39,7 @@ class FriendsDbStorageTest {
     void setup() {
         userDbStorage.save(user1);
         userDbStorage.save(user2);
+        userDbStorage.save(user3);
         friendsDbStorage.saveId(user1.getId(), user2.getId());
     }
 

@@ -126,10 +126,10 @@ class UserDbStorageTest {
         userDbStorage.saveId(user2.getId(), user1.getId());
         final List<User> friends = userDbStorage.findUsersFriends(user1.getId()).stream().toList();
 
-        assertThat(friends.getFirst()).hasFieldOrPropertyWithValue("id", user2.getId());
-        assertThat(friends.getLast()).hasFieldOrPropertyWithValue("id", user3.getId());
+        assertThat(friends.get(0)).hasFieldOrPropertyWithValue("id", user2.getId());
+        assertThat(friends.get(friends.size() - 1)).hasFieldOrPropertyWithValue("id", user3.getId());
 
-        final User user = friends.getFirst();
+        final User user = friends.get(0);
         assertThat(user).hasFieldOrPropertyWithValue("id", user2.getId());
         assertThat(user).hasFieldOrPropertyWithValue("email", user2.getEmail());
         assertThat(user).hasFieldOrPropertyWithValue("login", user2.getLogin());
@@ -147,7 +147,7 @@ class UserDbStorageTest {
         // добавляем друга user3, чтобы проверить подгружается ли он при вызове метода userDbStorage.findCommonFriends()
         userDbStorage.saveId(user3.getId(), user1.getId());
 
-        final User commonFriend = userDbStorage.findCommonFriends(user1.getId(), user2.getId()).stream().toList().getFirst();
+        final User commonFriend = userDbStorage.findCommonFriends(user1.getId(), user2.getId()).stream().toList().get(0);
         assertThat(commonFriend).hasFieldOrPropertyWithValue("id", user3.getId());
         assertThat(commonFriend).hasFieldOrPropertyWithValue("email", user3.getEmail());
         assertThat(commonFriend).hasFieldOrPropertyWithValue("login", user3.getLogin());
