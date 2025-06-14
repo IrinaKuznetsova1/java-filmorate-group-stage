@@ -102,4 +102,8 @@ public class UserService implements IntService<User> {
         log.info("Поиск общих друзей у пользователей: {}, {}.", id, otherId);
         return storage.findCommonFriends(id, otherId);
     }
+
+    public void delete(long userId) {
+        storage.delete(userId);
+    }
 }
