@@ -39,9 +39,9 @@ class FilmDbStorageTest {
     private final UserDbStorage userDbStorage;
     private final JdbcTemplate jdbc;
 
-    private final Film film1 = new Film(1,"name1", "description1", LocalDate.now(), 60, new Mpa(1, "G"));
-    private final Film film2 = new Film(2,"name2", "description2", LocalDate.now(), 60, new Mpa(2, "PG"));
-    private final Film film3 = new Film(3,"name3", "description3", LocalDate.now(), 60, new Mpa(3, "PG-13"));
+    private final Film film1 = new Film(1, "name1", "description1", LocalDate.now(), 60, new Mpa(1, "G"));
+    private final Film film2 = new Film(2, "name2", "description2", LocalDate.now(), 60, new Mpa(2, "PG"));
+    private final Film film3 = new Film(3, "name3", "description3", LocalDate.now(), 60, new Mpa(3, "PG-13"));
 
     private final User user1 = new User(1, "test1@mail.ru", "Login1", "Name1", LocalDate.now());
     private final User user2 = new User(2, "test2@mail.ru", "Login2", "Name2", LocalDate.now());
@@ -91,7 +91,7 @@ class FilmDbStorageTest {
     @Test
     void getById() {
         userDbStorage.save(user1);
-        final Film film4 = new Film(4,"name4", "description4", LocalDate.now(), 60, new Mpa(1, "G"));
+        final Film film4 = new Film(4, "name4", "description4", LocalDate.now(), 60, new Mpa(1, "G"));
         film4.addGenre(new Genre(5, "Документальный"));
         filmDbStorage.save(film4);
         filmDbStorage.saveId(film4.getId(), user1.getId());
@@ -106,7 +106,7 @@ class FilmDbStorageTest {
         assertThat(film.getMpa().getId()).isEqualTo(film4.getMpa().getId());
         assertThat(film.getMpa().getName()).isEqualTo(film4.getMpa().getName());
         assertThat(film.getGenres().size()).isEqualTo(film4.getGenres().size());
-        final Genre genre = film.getGenres().stream().toList().getFirst();
+        final Genre genre = film.getGenres().stream().toList().get(0);
         assertThat(genre).hasFieldOrPropertyWithValue("id", 5);
         assertThat(genre).hasFieldOrPropertyWithValue("name", "Документальный");
         assertThat(film.getIds().size()).isEqualTo(1);
@@ -141,7 +141,7 @@ class FilmDbStorageTest {
     @Test
     void saveIdAndRemoveId() {
         userDbStorage.save(user1);
-        final Film film4 = new Film(4,"name4", "description4", LocalDate.now(), 60, new Mpa(1, "G"));
+        final Film film4 = new Film(4, "name4", "description4", LocalDate.now(), 60, new Mpa(1, "G"));
         filmDbStorage.save(film4);
         Film film = filmDbStorage.saveId(film4.getId(), user1.getId());
         assertThat(film.getIds().size()).isEqualTo(1);
@@ -170,11 +170,11 @@ class FilmDbStorageTest {
 
         final List<Film> mostPopular = filmDbStorage.findTheMostPopular(3).stream().toList();
 
-        assertThat(mostPopular.getFirst()).hasFieldOrPropertyWithValue("id", film3.getId());
+        assertThat(mostPopular.get(0)).hasFieldOrPropertyWithValue("id", film3.getId());
         assertThat(mostPopular.get(1)).hasFieldOrPropertyWithValue("id", film2.getId());
-        assertThat(mostPopular.getLast()).hasFieldOrPropertyWithValue("id", film1.getId());
+        assertThat(mostPopular.get(mostPopular.size() - 1)).hasFieldOrPropertyWithValue("id", film1.getId());
 
-        final Film film = mostPopular.getFirst();
+        final Film film = mostPopular.get(0);
 
         assertThat(film).hasFieldOrPropertyWithValue("id", film3.getId());
         assertThat(film).hasFieldOrPropertyWithValue("name", film3.getName());
