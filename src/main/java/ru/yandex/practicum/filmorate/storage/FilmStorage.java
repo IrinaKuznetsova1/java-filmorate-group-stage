@@ -5,5 +5,5 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.Collection;
 
 public interface FilmStorage extends Storage<Film> {
-    Collection<Film> findTheMostPopular(long count);
+    Collection<Film> findTheMostPopular(long count, Integer genreId, Integer year);
 }
