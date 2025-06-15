@@ -32,7 +32,19 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "GROUP BY film_id) AS top_films ON f.id = top_films.film_id " +
             "ORDER BY COALESCE(top_films.like_count, 0) DESC " +
             "LIMIT ?";
-
+    private static final String FIND_RECOMMENDATIONS_QUERY = """
+            SELECT * FROM films f
+            RIGHT JOIN (
+            	SELECT DISTINCT l.film_id AS films FROM likes AS l
+            	RIGHT JOIN (
+            		SELECT user_id FROM likes
+            		WHERE film_id IN (SELECT film_id FROM likes WHERE user_id = ?)	AND user_id <> ?
+            		GROUP BY user_id
+            		ORDER BY count(likes.film_id) DESC) AS users
+            	ON users.user_id = l.user_id
+            	WHERE l.film_id NOT IN (
+            	SELECT film_id FROM likes WHERE user_id = ?)) AS f1
+            ON f1.films = f.id;""";
     private static final String INSERT_QUERY = "INSERT INTO films(name, description, releaseDate, duration, MPA_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, releaseDate = ?, " +
             "duration = ?, MPA_id = ? WHERE id = ?";
@@ -165,5 +177,16 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public void delete(long userId) {
         super.delete(DELETE_QUERY, userId);
+    }
+
+    @Override
+    public Collection<Film> findRecommendations(long userId) {
+        final Collection<Film> films = findMany(FIND_RECOMMENDATIONS_QUERY, userId, userId, userId);
+        films.forEach(film -> {
+            addLikes(film);
+            addGenres(film);
+            film.setMpa(mpaDb.getById(film.getMpa().getId()));
+        });
+        return films;
     }
 }
