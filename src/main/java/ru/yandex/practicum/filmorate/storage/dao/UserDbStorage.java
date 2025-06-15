@@ -31,7 +31,6 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
 
     private static final String INSERT_QUERY = "INSERT INTO users(email, login, name, birthday) VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
-    private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
 
     @Autowired
     public UserDbStorage(JdbcTemplate jdbc, UserRowMapper mapper, FriendsDbStorage friendsDb) {
@@ -121,7 +120,4 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
         return commonFriends;
     }
 
-    public void delete(long userId) {
-        super.delete(DELETE_QUERY, userId);
-    }
 }

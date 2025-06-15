@@ -71,10 +71,5 @@ public class UserController {
         log.info("Получен запрос DELETE/users/{}/friends/{}.", id, friendId);
         return userService.deleteFriend(id, friendId);
     }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") long id) {
-        userService.delete(id);
-    }
 }
 

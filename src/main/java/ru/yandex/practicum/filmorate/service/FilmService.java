@@ -84,8 +84,4 @@ public class FilmService implements IntService<Film> {
         return storage.findTheMostPopular(count);
     }
 
-    public void delete(long filmId) {
-        storage.delete(filmId);
-    }
-
 }

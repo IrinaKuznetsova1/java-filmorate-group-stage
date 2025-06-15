@@ -6,6 +6,4 @@ import java.util.Collection;
 
 public interface FilmStorage extends Storage<Film> {
     Collection<Film> findTheMostPopular(long count);
-
-    void delete(long filmId);
 }
