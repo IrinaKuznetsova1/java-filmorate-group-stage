@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.errorHandler;
 
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,10 @@ import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,9 +44,12 @@ public class ErrorHandlingControllerAdvice {
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Violation> onNotFoundException(NotFoundException e) {
+    public ResponseEntity<Map<String, String>> onNotFoundException(NotFoundException e) {
         log.warn("Обработка исключения NotFoundException: {}", e.getMessage());
-        return new ResponseEntity<>(new Violation("id", e.getMessage()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(
+                Collections.singletonMap("error", e.getMessage()),
+                HttpStatus.NOT_FOUND
+        );
     }
 
     @ExceptionHandler(DuplicatedDataException.class)
@@ -69,4 +76,12 @@ public class ErrorHandlingControllerAdvice {
         log.warn("Обработка исключения RuntimeException: {}", e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Violation> onValidationException(ValidationException e) {
+        log.warn("Обработка исключения ValidationException: {}", e.getMessage());
+        return new ResponseEntity<>(new Violation("sortBy", e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+
 }

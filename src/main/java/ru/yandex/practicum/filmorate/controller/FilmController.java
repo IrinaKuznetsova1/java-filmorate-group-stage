@@ -65,4 +65,12 @@ public class FilmController {
         log.info("Получен запрос DELETE/films/{}/like/{}.", id, userId);
         return filmService.deleteLike(id, userId);
     }
+
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getFilmsByDirector(
+            @PathVariable long directorId,
+            @RequestParam(defaultValue = "year") String sortBy) {
+        log.info("Получен запрос GET /films/director/{}?sortBy={}", directorId, sortBy);
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
 }
