@@ -26,37 +26,49 @@ import static org.junit.jupiter.api.Assertions.*;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FilmDbStorage.class, FilmRowMapper.class,
+@Import({
+        FilmDbStorage.class, FilmRowMapper.class,
         GenreDbStorage.class, GenreRowMapper.class,
         MpaDbStorage.class, MpaRowMapper.class,
         LikesDbStorage.class, LikeRowMapper.class,
         FilmGenreDbStorage.class, FilmGenreRowMapper.class,
         UserDbStorage.class, UserRowMapper.class,
-        FriendsDbStorage.class, FriendsRowMapper.class})
+        FriendsDbStorage.class, FriendsRowMapper.class,
+        FilmDirectorDbStorage.class, DirectorRowMapper.class,
+        DirectorDbStorage.class
+})
 class LikesDbStorageTest {
     private final LikesDbStorage likesDbStorage;
-    private final FilmDbStorage filmDBStorage;
+    private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
     private final JdbcTemplate jdbc;
 
-    private final Film film1 = new Film(1, "name1", "description1", LocalDate.now(), 60, new Mpa(1, "G"));
-
-    private final User user1 = new User(1, "test1@mail.ru", "Login1", "Name1", LocalDate.now());
-    private final User user2 = new User(2, "test2@mail.ru", "Login2", "Name2", LocalDate.now());
+    private Film film1;
+    private User user1;
+    private User user2;
 
     @BeforeEach
     void setup() {
-        filmDBStorage.save(film1);
-        userDbStorage.save(user1);
-        userDbStorage.save(user2);
+        film1 = new Film(0, "name1", "description1", LocalDate.now(), 60, new Mpa(1));
+        user1 = new User(0, "test1@mail.ru", "Login1", "Name1", LocalDate.now());
+        user2 = new User(0, "test2@mail.ru", "Login2", "Name2", LocalDate.now());
+
+        film1 = filmDbStorage.save(film1);
+        user1 = userDbStorage.save(user1);
+        user2 = userDbStorage.save(user2);
+
         likesDbStorage.saveId(film1.getId(), user1.getId());
     }
 
     @AfterEach
     void clear() {
         jdbc.update("DELETE FROM likes");
+        jdbc.update("DELETE FROM film_director");
+        jdbc.update("DELETE FROM film_genre");
+        jdbc.update("DELETE FROM friends");
         jdbc.update("DELETE FROM films");
         jdbc.update("DELETE FROM users");
+        jdbc.update("DELETE FROM directors");
     }
 
     @Test
