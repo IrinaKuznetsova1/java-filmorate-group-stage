@@ -13,6 +13,8 @@ public interface FilmStorage extends Storage<Film> {
 
     void delete(long filmId);
 
+    Collection<Film> findByFilmNameAndOrDirectorAndBackPopularFilms(String query, String by);
+
     Collection<Film> findRecommendations(long userId);
 
     Collection<Film> findCommonFilms(long userId, long friendId);
