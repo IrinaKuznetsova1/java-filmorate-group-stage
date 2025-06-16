@@ -26,6 +26,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
+ add-director
     private static final String FIND_MOST_POPULAR_QUERY = "SELECT * FROM films AS f RIGHT JOIN (SELECT film_id FROM likes " +
             "GROUP BY film_id ORDER BY COUNT(user_id) DESC LIMIT ?) AS mp ON mp.film_id = f.id";
     private static final String FIND_BY_DIRECTOR_SORTED_BY_LIKES = "SELECT f.* FROM films f " +
@@ -38,10 +39,19 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "JOIN film_director fd ON f.id = fd.film_id " +
             "WHERE fd.director_id = ? " +
             "ORDER BY f.releaseDate";
+    private static final String FIND_MOST_POPULAR_QUERY = "SELECT f.id, f.name, f.description, f.releaseDate, " +
+            "f.duration, f.MPA_id FROM films AS f " +
+            "LEFT JOIN (SELECT film_id, COUNT(user_id) AS like_count " +
+            "FROM likes " +
+            "GROUP BY film_id) AS top_films ON f.id = top_films.film_id " +
+            "ORDER BY COALESCE(top_films.like_count, 0) DESC " +
+            "LIMIT ?";
+ develop
 
     private static final String INSERT_QUERY = "INSERT INTO films(name, description, releaseDate, duration, MPA_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, releaseDate = ?, " +
             "duration = ?, MPA_id = ? WHERE id = ?";
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
 
     @Autowired
     public FilmDbStorage(
@@ -158,6 +168,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     }
 
     @Override
+ add-director
     public Collection<Film> getFilmsByDirectorSortedByLikes(long directorId) {
         final Collection<Film> films = findMany(FIND_BY_DIRECTOR_SORTED_BY_LIKES, directorId);
         films.forEach(this::loadAdditionalData);
@@ -179,3 +190,9 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         return film;
     }
 }
+
+    public void delete(long userId) {
+        super.delete(DELETE_QUERY, userId);
+    }
+}
+ develop

@@ -106,6 +106,7 @@ public class FilmService implements IntService<Film> {
         return storage.findTheMostPopular(count);
     }
 
+ add-director
     public Collection<Film> getFilmsByDirector(long directorId, String sortBy) {
         log.info("Получен запрос на получение фильмов режиссера {} с сортировкой по {}", directorId, sortBy);
         directorService.findById(directorId);
@@ -135,3 +136,10 @@ public class FilmService implements IntService<Film> {
         return field != null && !field.isBlank();
     }
 }
+
+    public void delete(long filmId) {
+        storage.delete(filmId);
+    }
+
+}
+ develop
