@@ -12,4 +12,6 @@ public interface FilmStorage extends Storage<Film> {
     Collection<Film> getFilmsByDirectorSortedByYear(long directorId);
 
     void delete(long filmId);
+
+    Collection<Film> findCommonFilms(long userId, long friendId);
 }

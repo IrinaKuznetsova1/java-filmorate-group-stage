@@ -123,7 +123,15 @@ public class FilmService implements IntService<Film> {
         }
     }
 
+    public Collection<Film> findCommonFilms(long userId, long friendId) {
+        log.info("Получен запрос на поиск общих фильмов пользователей {} и {}", userId, friendId);
+        userStorage.getById(userId);
+        userStorage.getById(friendId);
+        return storage.findCommonFilms(userId, friendId);
+    }
+
     public void delete(long filmId) {
+        log.info("Получен запрос на удаление фильма с id {}", filmId);
         storage.delete(filmId);
     }
 
