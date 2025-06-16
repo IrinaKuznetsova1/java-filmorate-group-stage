@@ -8,4 +8,6 @@ public interface FilmStorage extends Storage<Film> {
     Collection<Film> findTheMostPopular(long count);
 
     void delete(long filmId);
+
+    Collection<Film> findCommonFilms(long userId, long friendId);
 }

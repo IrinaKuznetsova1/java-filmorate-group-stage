@@ -37,6 +37,13 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, releaseDate = ?, " +
             "duration = ?, MPA_id = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
+    private static final String FIND_COMMON_FILMS_QUERY =
+            "SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.MPA_id " +
+                    "FROM films f " +
+                    "JOIN likes l1 ON f.id = l1.film_id AND l1.user_id = ? " +
+                    "JOIN likes l2 ON f.id = l2.film_id AND l2.user_id = ? " +
+                    "LEFT JOIN (SELECT film_id, COUNT(user_id) AS like_count FROM likes GROUP BY film_id) lc ON f.id = lc.film_id " +
+                    "ORDER BY COALESCE(lc.like_count, 0) DESC";
 
     @Autowired
     public FilmDbStorage(
@@ -165,5 +172,15 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public void delete(long userId) {
         super.delete(DELETE_QUERY, userId);
+    }
+
+    public Collection<Film> findCommonFilms(long userId, long friendId) {
+        final Collection<Film> films = findMany(FIND_COMMON_FILMS_QUERY, userId, friendId);
+        films.forEach(film -> {
+            addLikes(film);
+            addGenres(film);
+            film.setMpa(mpaDb.getById(film.getMpa().getId()));
+        });
+        return films;
     }
 }

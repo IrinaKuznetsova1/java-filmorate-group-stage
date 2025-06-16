@@ -88,4 +88,11 @@ public class FilmService implements IntService<Film> {
         storage.delete(filmId);
     }
 
+    public Collection<Film> findCommonFilms(long userId, long friendId) {
+        userStorage.getById(userId);
+        userStorage.getById(friendId);
+
+        return storage.findCommonFilms(userId, friendId);
+    }
+
 }
