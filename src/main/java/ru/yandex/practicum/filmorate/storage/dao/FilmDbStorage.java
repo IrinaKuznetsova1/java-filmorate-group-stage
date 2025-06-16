@@ -37,7 +37,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "SELECT film_id " +
             "FROM film_genre " +
             "WHERE ? IS NULL OR genre_id = ?) " +
-            "ORDER BY mp.count_likes DESC "+
+            "ORDER BY mp.count_likes DESC " +
             "LIMIT ?";
     private static final String FIND_BY_DIRECTOR_SORTED_BY_LIKES = "SELECT f.* FROM films f " +
             "JOIN film_director fd ON f.id = fd.film_id " +
