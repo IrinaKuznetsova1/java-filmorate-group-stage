@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.Collections;
 
 @Service
 @Slf4j
@@ -144,6 +145,16 @@ public class FilmService implements IntService<Film> {
                 directorService.findById(director.getId());
             });
         }
+    }
+
+    public Collection<Film> findByFilmNameAndOrDirectorAndBackPopularFilms(String query, String by) {
+        if (!isNotNullAndIsNotBlank(query)) {
+            log.info("query = null или пустой, возвращаем пустой список");
+            return Collections.emptyList();
+        }
+        log.info("Отправляем запрос на возврат фильмов из хранилища по результатам поиска по тексту = {} по названию" +
+                "и/или автору = {}, отсортированных по кол-ву лайков", query, by);
+        return storage.findByFilmNameAndOrDirectorAndBackPopularFilms(query, by);
     }
 
     private boolean isNotNullAndIsNotBlank(String field) {

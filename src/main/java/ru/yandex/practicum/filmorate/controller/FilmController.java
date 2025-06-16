@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -87,5 +88,14 @@ public class FilmController {
             @RequestParam @Min(1) long friendId) {
         log.info("Получен запрос GET /films/common?userId={}&friendId={}", userId, friendId);
         return filmService.findCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> findByFilmNameAndOrDirectorAndBackPopularFilms(@RequestParam String query,
+                                                                           @RequestParam(defaultValue = "title")
+                                                                           @Pattern(regexp = "title|director|title,director|director,title")
+                                                                           String by) {
+        log.info("Получен запрос GET/films/search?query={}&by={}", query, by);
+        return filmService.findByFilmNameAndOrDirectorAndBackPopularFilms(query, by);
     }
 }

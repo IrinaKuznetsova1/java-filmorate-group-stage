@@ -11,8 +11,8 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.dao.mappers.FilmRowMapper;
 
 import java.sql.Date;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -61,6 +61,20 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, releaseDate = ?, " +
             "duration = ?, MPA_id = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
+
+    private static final String FIND_MOST_POPULAR_BY_NAME = "SELECT f.*, COUNT(ls.user_id) AS likes_count FROM films AS f " +
+            "LEFT JOIN likes AS ls ON f.id = ls.film_id WHERE LOWER(f.name) LIKE LOWER(?) GROUP BY f.id ORDER BY likes_count DESC";
+    private static final String FIND_MOST_POPULAR_BY_DIRECTOR = "SELECT f.*, COUNT(ls.user_id) AS likes_count " +
+            "FROM films AS f LEFT JOIN likes AS ls ON f.id = ls.film_id LEFT JOIN film_director AS fd ON f.id = fd.film_id " +
+            "LEFT JOIN directors AS d ON fd.director_id = d.id WHERE LOWER(d.name) LIKE LOWER(?) GROUP BY f.id " +
+            "ORDER BY likes_count DESC";
+    private static final String FIND_MOST_POPULAR_BY_DIRECTOR_AND_TITLE = "SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.MPA_id " +
+            "FROM films f " +
+            "LEFT JOIN film_director fd ON f.id = fd.film_id " +
+            "LEFT JOIN directors d ON fd.director_id = d.id " +
+            "WHERE (LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?)) " +
+            "GROUP BY f.id, f.name, f.description, f.releaseDate, f.duration, f.MPA_id " +
+            "ORDER BY (SELECT COUNT(*) FROM likes WHERE film_id = f.id) DESC";
 
     @Autowired
     public FilmDbStorage(
@@ -202,6 +216,36 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public void delete(long filmId) {
         super.delete(DELETE_QUERY, filmId);
+    }
+
+    public Collection<Film> findByFilmNameAndOrDirectorAndBackPopularFilms(String query, String by) {
+        Set<String> components = Arrays.stream(by.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+        Set<String> allowedValues = Set.of("director", "title");
+        if (!allowedValues.containsAll(components)) {
+            throw new IllegalArgumentException("Неверные параметры ввода, ожидаются: 'director' и/или 'title'");
+        }
+        Collection<Film> films = null;
+
+        try {
+            if (components.contains("director") && components.contains("title")) {
+                log.info("Поиск одновременно по director и title");
+                films = findMany(FIND_MOST_POPULAR_BY_DIRECTOR_AND_TITLE, "%" + query.toLowerCase() + "%", "%" + query.toLowerCase() + "%");
+            } else if (components.contains("director")) {
+                log.info("Поиск только по полю director");
+                films = findMany(FIND_MOST_POPULAR_BY_DIRECTOR, "%" + query.toLowerCase() + "%");
+            } else if (components.contains("title")) {
+                log.info("Поиск только по полю title");
+                films = findMany(FIND_MOST_POPULAR_BY_NAME, "%" + query.toLowerCase() + "%");
+            }
+        } catch (IllegalArgumentException e) {
+            log.info("Ничего не найдено по указанному поиску");
+            return Collections.emptyList();
+        }
+        films.forEach(this::loadAdditionalData);
+        return films;
     }
 
     private Film loadAdditionalData(Film film) {
