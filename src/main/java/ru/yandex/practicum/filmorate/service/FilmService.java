@@ -104,9 +104,9 @@ public class FilmService implements IntService<Film> {
         return findById(filmId);
     }
 
-    public Collection<Film> findTheMostPopular(long count) {
-        log.info("Получен запрос на получение {} самых популярных фильмов", count);
-        return storage.findTheMostPopular(count);
+    public Collection<Film> findTheMostPopular(long count, Integer genreId, Integer year) {
+        log.info("Поиск самых популярных фильмов, количество: {}, id жанра: {}, год: {}.", count, genreId, year);
+        return storage.findTheMostPopular(count, genreId, year);
     }
 
     public Collection<Film> getFilmsByDirector(long directorId, String sortBy) {

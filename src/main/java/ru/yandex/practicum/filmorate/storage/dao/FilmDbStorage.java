@@ -26,12 +26,18 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
-    private static final String FIND_MOST_POPULAR_QUERY = "SELECT f.id, f.name, f.description, f.releaseDate, " +
-            "f.duration, f.MPA_id FROM films AS f " +
-            "LEFT JOIN (SELECT film_id, COUNT(user_id) AS like_count " +
+    private static final String FIND_MOST_POPULAR_QUERY = "SELECT * FROM films AS f " +
+            "LEFT JOIN ( " +
+            "SELECT film_id, COUNT(user_id) AS count_likes " +
             "FROM likes " +
-            "GROUP BY film_id) AS top_films ON f.id = top_films.film_id " +
-            "ORDER BY COALESCE(top_films.like_count, 0) DESC " +
+            "GROUP BY FILM_ID ) AS mp " +
+            "ON mp.film_id = f.id " +
+            "WHERE (? IS NULL OR EXTRACT (YEAR from f.releaseDate) = ?) " +
+            "AND f.id IN ( " +
+            "SELECT film_id " +
+            "FROM film_genre " +
+            "WHERE ? IS NULL OR genre_id = ?) " +
+            "ORDER BY mp.count_likes DESC " +
             "LIMIT ?";
     private static final String FIND_BY_DIRECTOR_SORTED_BY_LIKES = "SELECT f.* FROM films f " +
             "JOIN film_director fd ON f.id = fd.film_id " +
@@ -166,8 +172,8 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> findTheMostPopular(long count) {
-        final Collection<Film> films = findMany(FIND_MOST_POPULAR_QUERY, count);
+    public Collection<Film> findTheMostPopular(long count, Integer genreId, Integer year) {
+        final Collection<Film> films = findMany(FIND_MOST_POPULAR_QUERY, year, year, genreId, genreId, count);
         films.forEach(this::loadAdditionalData);
         return films;
     }
