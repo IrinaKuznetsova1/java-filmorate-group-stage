@@ -22,6 +22,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private final LikesDbStorage likesDb;
     private final MpaDbStorage mpaDb;
     private final GenreDbStorage genreDb;
+    private final FilmDirectorDbStorage filmDirectorDb;
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
@@ -32,6 +33,16 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "GROUP BY film_id) AS top_films ON f.id = top_films.film_id " +
             "ORDER BY COALESCE(top_films.like_count, 0) DESC " +
             "LIMIT ?";
+    private static final String FIND_BY_DIRECTOR_SORTED_BY_LIKES = "SELECT f.* FROM films f " +
+            "JOIN film_director fd ON f.id = fd.film_id " +
+            "LEFT JOIN likes l ON f.id = l.film_id " +
+            "WHERE fd.director_id = ? " +
+            "GROUP BY f.id " +
+            "ORDER BY COUNT(l.user_id) DESC";
+    private static final String FIND_BY_DIRECTOR_SORTED_BY_YEAR = "SELECT f.* FROM films f " +
+            "JOIN film_director fd ON f.id = fd.film_id " +
+            "WHERE fd.director_id = ? " +
+            "ORDER BY f.releaseDate";
 
     private static final String INSERT_QUERY = "INSERT INTO films(name, description, releaseDate, duration, MPA_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, releaseDate = ?, " +
@@ -45,46 +56,32 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             FilmGenreDbStorage filmGenreDb,
             LikesDbStorage likesDb,
             MpaDbStorage mpaDb,
-            GenreDbStorage genreDb
+            GenreDbStorage genreDb,
+            FilmDirectorDbStorage filmDirectorDb
     ) {
         super(jdbc, mapper);
         this.filmGenreDb = filmGenreDb;
         this.likesDb = likesDb;
         this.mpaDb = mpaDb;
         this.genreDb = genreDb;
+        this.filmDirectorDb = filmDirectorDb;
     }
 
     @Override
     public Collection<Film> getAll() {
         final Collection<Film> films = findMany(FIND_ALL_QUERY);
-        films.forEach(film -> {
-            addLikes(film);
-            addGenres(film);
-            film.setMpa(mpaDb.getById(film.getMpa().getId()));
-        });
+        films.forEach(this::loadAdditionalData);
         return films;
-    }
-
-    private Film addLikes(Film film) {
-        likesDb.getAllByFilmId(film.getId())
-                .forEach(film::saveId);
-        return film;
-    }
-
-    private void addGenres(Film film) {
-        filmGenreDb.getAllByFilmId(film.getId())
-                .forEach(film::addGenre);
     }
 
     @Override
     public Film getById(long id) {
         final Optional<Film> filmOptional = findOne(FIND_BY_ID_QUERY, id);
-        if (filmOptional.isEmpty())
+        if (filmOptional.isEmpty()) {
             throw new NotFoundException("Фильм с id " + id + " не найден.");
+        }
         Film film = filmOptional.get();
-        addLikes(film);
-        addGenres(film);
-        film.setMpa(mpaDb.getById(film.getMpa().getId()));
+        loadAdditionalData(film);
         return film;
     }
 
@@ -109,7 +106,10 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         //добавить в film_genre после добавления в film, так как нужен film_id
         film.getGenres().forEach(genre -> filmGenreDb.saveId(film.getId(), genre.getId()));
 
-        log.info("Объект сохранен в таблицу films.");
+        // добавить режиссеров
+        film.getDirectors().forEach(director -> filmDirectorDb.addDirectorToFilm(film.getId(), director.getId()));
+
+        log.info("Фильм сохранен в базу данных с id: {}", id);
         return film;
     }
 
@@ -126,7 +126,13 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             filmGenreDb.removeGenresByFilmId(film.getId());
             film.getGenres().forEach(genre -> filmGenreDb.saveId(film.getId(), genre.getId()));
         }
-        //обновить фильм в films
+
+        // обновить режиссеров
+        if (!film.getDirectors().isEmpty()) {
+            filmDirectorDb.removeDirectorsFromFilm(film.getId());
+            film.getDirectors().forEach(director -> filmDirectorDb.addDirectorToFilm(film.getId(), director.getId()));
+        }
+
         update(
                 UPDATE_QUERY,
                 film.getName(),
@@ -136,10 +142,11 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                 film.getMpa().getId(),
                 film.getId()
         );
-        //добавить лайки и вернуть film
-        return addLikes(film);
+
+        return loadAdditionalData(film);
     }
 
+    @Override
     public Film saveId(long filmId, long userId) {
         likesDb.saveId(filmId, userId);
         return getById(filmId);
@@ -154,16 +161,34 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public Collection<Film> findTheMostPopular(long count) {
         final Collection<Film> films = findMany(FIND_MOST_POPULAR_QUERY, count);
-        films.forEach(film -> {
-            addLikes(film);
-            addGenres(film);
-            film.setMpa(mpaDb.getById(film.getMpa().getId()));
-        });
+        films.forEach(this::loadAdditionalData);
         return films;
     }
 
     @Override
-    public void delete(long userId) {
-        super.delete(DELETE_QUERY, userId);
+    public Collection<Film> getFilmsByDirectorSortedByLikes(long directorId) {
+        final Collection<Film> films = findMany(FIND_BY_DIRECTOR_SORTED_BY_LIKES, directorId);
+        films.forEach(this::loadAdditionalData);
+        return films;
+    }
+
+    @Override
+    public Collection<Film> getFilmsByDirectorSortedByYear(long directorId) {
+        final Collection<Film> films = findMany(FIND_BY_DIRECTOR_SORTED_BY_YEAR, directorId);
+        films.forEach(this::loadAdditionalData);
+        return films;
+    }
+
+    @Override
+    public void delete(long filmId) {
+        super.delete(DELETE_QUERY, filmId);
+    }
+
+    private Film loadAdditionalData(Film film) {
+        likesDb.getAllByFilmId(film.getId()).forEach(film::saveId);
+        filmGenreDb.getAllByFilmId(film.getId()).forEach(film::addGenre);
+        film.setDirectors(filmDirectorDb.getDirectorsByFilmId(film.getId()));
+        film.setMpa(mpaDb.getById(film.getMpa().getId()));
+        return film;
     }
 }
