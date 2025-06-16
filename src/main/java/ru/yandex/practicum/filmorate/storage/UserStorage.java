@@ -10,4 +10,6 @@ public interface UserStorage extends Storage<User> {
     Collection<User> findUsersFriends(long id);
 
     Collection<User> findCommonFriends(long id, long otherId);
+
+    void delete(long userId);
 }
