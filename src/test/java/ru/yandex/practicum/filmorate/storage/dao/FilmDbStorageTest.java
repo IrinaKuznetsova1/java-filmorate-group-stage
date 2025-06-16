@@ -33,7 +33,9 @@ import static org.junit.jupiter.api.Assertions.*;
         LikesDbStorage.class, LikeRowMapper.class,
         FilmGenreDbStorage.class, FilmGenreRowMapper.class,
         UserDbStorage.class, UserRowMapper.class,
-        FriendsDbStorage.class, FriendsRowMapper.class})
+        FriendsDbStorage.class, FriendsRowMapper.class,
+        FilmDirectorDbStorage.class, FilmDirectorRowMapper.class,
+        DirectorDbStorage.class, DirectorRowMapper.class})
 class FilmDbStorageTest {
     private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
@@ -66,6 +68,7 @@ class FilmDbStorageTest {
     void clear() {
         jdbc.update("DELETE FROM film_genre");
         jdbc.update("DELETE FROM likes");
+        jdbc.update("DELETE FROM film_director");
         jdbc.update("DELETE FROM films");
         jdbc.update("DELETE FROM users");
     }
@@ -168,7 +171,8 @@ class FilmDbStorageTest {
 
         filmDbStorage.saveId(film1.getId(), user1.getId());
 
-        final List<Film> mostPopular = filmDbStorage.findTheMostPopular(3).stream().toList();
+        // проверка самых популярных фильмов без указания genreId и year
+        final List<Film> mostPopular = filmDbStorage.findTheMostPopular(3, null, null).stream().toList();
 
         assertThat(mostPopular.get(0)).hasFieldOrPropertyWithValue("id", film3.getId());
         assertThat(mostPopular.get(1)).hasFieldOrPropertyWithValue("id", film2.getId());
@@ -185,5 +189,30 @@ class FilmDbStorageTest {
         assertThat(film.getMpa().getName()).isEqualTo(film3.getMpa().getName());
         assertThat(film.getGenres().size()).isEqualTo(film3.getGenres().size());
         assertThat(film.getIds().size()).isEqualTo(3);
+
+        // проверка самых популярных фильмов без указания genreId
+        final List<Film> mostPopularWithYear = filmDbStorage.findTheMostPopular(3, null, 2025).stream().toList();
+
+        assertThat(mostPopularWithYear.get(0)).hasFieldOrPropertyWithValue("id", film3.getId());
+        assertThat(mostPopularWithYear.get(1)).hasFieldOrPropertyWithValue("id", film2.getId());
+        assertThat(mostPopularWithYear.get(mostPopular.size() - 1)).hasFieldOrPropertyWithValue("id", film1.getId());
+
+        final List<Film> mostPopularWithYear2 = filmDbStorage.findTheMostPopular(3, null, 1000).stream().toList();
+        assertThat(mostPopularWithYear2.size()).isEqualTo(0);
+
+        // проверка самых популярных фильмов без указания year
+        final List<Film> mostPopularWithGenre = filmDbStorage.findTheMostPopular(3, 5, null).stream().toList();
+        assertThat(mostPopularWithGenre.get(0)).hasFieldOrPropertyWithValue("id", film3.getId());
+        assertThat(mostPopularWithGenre.get(1)).hasFieldOrPropertyWithValue("id", film1.getId());
+        assertThat(mostPopularWithGenre.size()).isEqualTo(2);
+
+        final List<Film> mostPopularWithGenre2 = filmDbStorage.findTheMostPopular(3, 1000, null).stream().toList();
+        assertThat(mostPopularWithGenre2.size()).isEqualTo(0);
+
+        // проверка самых популярных фильмов c указанием всех параметров
+        final List<Film> mostPopularWithGenreAndYear = filmDbStorage.findTheMostPopular(3, 3, 2025).stream().toList();
+        assertThat(mostPopularWithGenreAndYear.get(0)).hasFieldOrPropertyWithValue("id", film2.getId());
+        assertThat(mostPopularWithGenreAndYear.get(1)).hasFieldOrPropertyWithValue("id", film1.getId());
+        assertThat(mostPopularWithGenreAndYear.size()).isEqualTo(2);
     }
 }

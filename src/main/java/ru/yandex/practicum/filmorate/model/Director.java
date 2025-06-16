@@ -9,6 +9,6 @@ import ru.yandex.practicum.filmorate.annotations.Marker;
 @AllArgsConstructor
 public class Director {
     @Positive(groups = Marker.OnUpdate.class, message = "id должен быть указан и быть больше нуля")
-    private int id;
+    private long id;
     private String name;
 }

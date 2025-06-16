@@ -28,9 +28,11 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> findTheMostPopular(@RequestParam(defaultValue = "10") @Min(1) long count) {
-        log.info("Получен запрос GET/films/popular?count={}.", count);
-        return filmService.findTheMostPopular(count);
+    public Collection<Film> findTheMostPopular(@RequestParam(defaultValue = "10") @Min(1) long count,
+                                               @RequestParam(required = false) @Min(1) Integer genreId,
+                                               @RequestParam(required = false) @Min(1895) Integer year) {
+        log.info("Получен запрос GET/films/popular?count={}&genreId={}&year={}.", count, genreId, year);
+        return filmService.findTheMostPopular(count, genreId, year);
     }
 
     @GetMapping("/{id}")
@@ -66,8 +68,24 @@ public class FilmController {
         return filmService.deleteLike(id, userId);
     }
 
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getFilmsByDirector(
+            @PathVariable long directorId,
+            @RequestParam(defaultValue = "year") String sortBy) {
+        log.info("Получен запрос GET /films/director/{}?sortBy={}", directorId, sortBy);
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") long id) {
         filmService.delete(id);
+    }
+
+    @GetMapping("/common")
+    public Collection<Film> findCommonFilms(
+            @RequestParam @Min(1) long userId,
+            @RequestParam @Min(1) long friendId) {
+        log.info("Получен запрос GET /films/common?userId={}&friendId={}", userId, friendId);
+        return filmService.findCommonFilms(userId, friendId);
     }
 }

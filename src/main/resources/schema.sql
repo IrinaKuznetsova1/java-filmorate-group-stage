@@ -58,3 +58,14 @@ CREATE TABLE IF NOT EXISTS useful_tab (
     useful_flag integer NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS directors (
+    id bigint primary key auto_increment,
+    name varchar(150) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS film_director (
+    film_id bigint REFERENCES films(id) ON DELETE CASCADE,
+    director_id bigint REFERENCES directors(id) ON DELETE CASCADE,
+    PRIMARY KEY (film_id, director_id)
+);
+
