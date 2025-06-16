@@ -73,4 +73,9 @@ public class FilmController {
         log.info("Получен запрос GET /films/director/{}?sortBy={}", directorId, sortBy);
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable("id") long id) {
+        filmService.delete(id);
+    }
 }

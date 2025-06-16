@@ -26,8 +26,13 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
-    private static final String FIND_MOST_POPULAR_QUERY = "SELECT * FROM films AS f RIGHT JOIN (SELECT film_id FROM likes " +
-            "GROUP BY film_id ORDER BY COUNT(user_id) DESC LIMIT ?) AS mp ON mp.film_id = f.id";
+    private static final String FIND_MOST_POPULAR_QUERY = "SELECT f.id, f.name, f.description, f.releaseDate, " +
+            "f.duration, f.MPA_id FROM films AS f " +
+            "LEFT JOIN (SELECT film_id, COUNT(user_id) AS like_count " +
+            "FROM likes " +
+            "GROUP BY film_id) AS top_films ON f.id = top_films.film_id " +
+            "ORDER BY COALESCE(top_films.like_count, 0) DESC " +
+            "LIMIT ?";
     private static final String FIND_BY_DIRECTOR_SORTED_BY_LIKES = "SELECT f.* FROM films f " +
             "JOIN film_director fd ON f.id = fd.film_id " +
             "LEFT JOIN likes l ON f.id = l.film_id " +
@@ -42,6 +47,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private static final String INSERT_QUERY = "INSERT INTO films(name, description, releaseDate, duration, MPA_id) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, releaseDate = ?, " +
             "duration = ?, MPA_id = ? WHERE id = ?";
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
 
     @Autowired
     public FilmDbStorage(
@@ -100,6 +106,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         //добавить в film_genre после добавления в film, так как нужен film_id
         film.getGenres().forEach(genre -> filmGenreDb.saveId(film.getId(), genre.getId()));
 
+        // добавить режиссеров
         film.getDirectors().forEach(director -> filmDirectorDb.addDirectorToFilm(film.getId(), director.getId()));
 
         log.info("Фильм сохранен в базу данных с id: {}", id);
@@ -120,6 +127,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             film.getGenres().forEach(genre -> filmGenreDb.saveId(film.getId(), genre.getId()));
         }
 
+        // обновить режиссеров
         if (!film.getDirectors().isEmpty()) {
             filmDirectorDb.removeDirectorsFromFilm(film.getId());
             film.getDirectors().forEach(director -> filmDirectorDb.addDirectorToFilm(film.getId(), director.getId()));
@@ -169,6 +177,11 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         final Collection<Film> films = findMany(FIND_BY_DIRECTOR_SORTED_BY_YEAR, directorId);
         films.forEach(this::loadAdditionalData);
         return films;
+    }
+
+    @Override
+    public void delete(long filmId) {
+        super.delete(DELETE_QUERY, filmId);
     }
 
     private Film loadAdditionalData(Film film) {

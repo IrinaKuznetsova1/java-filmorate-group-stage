@@ -91,14 +91,17 @@ public class FilmService implements IntService<Film> {
         log.info("Получен запрос на добавление лайка фильму {} от пользователя {}", filmId, userId);
         findById(filmId);
         userStorage.getById(userId);
-        return storage.saveId(filmId, userId);
+        storage.saveId(filmId, userId);
+        return findById(filmId);
     }
 
     public Film deleteLike(long filmId, long userId) {
         log.info("Получен запрос на удаление лайка у фильма {} от пользователя {}", filmId, userId);
         findById(filmId);
         userStorage.getById(userId);
-        return storage.removeId(filmId, userId);
+        storage.removeId(filmId, userId);
+        log.info("Пользователь id {} удалил лайк у фильма id {}.", userId, filmId);
+        return findById(filmId);
     }
 
     public Collection<Film> findTheMostPopular(long count) {
@@ -118,6 +121,10 @@ public class FilmService implements IntService<Film> {
             default:
                 throw new ValidationException("Параметр sortBy должен быть либо 'likes', либо 'year'");
         }
+    }
+
+    public void delete(long filmId) {
+        storage.delete(filmId);
     }
 
     private void validateDirectors(Film film) {
