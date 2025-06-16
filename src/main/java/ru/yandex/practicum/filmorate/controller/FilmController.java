@@ -93,7 +93,7 @@ public class FilmController {
     @GetMapping("/search")
     public Collection<Film> findByFilmNameAndOrDirectorAndBackPopularFilms(@RequestParam String query,
                                                                            @RequestParam(defaultValue = "title")
-                                                                           @Pattern(regexp = "title|director|title,director")
+                                                                           @Pattern(regexp = "title|director|title,director|director,title")
                                                                            String by) {
         log.info("Получен запрос GET/films/search?query={}&by={}", query, by);
         return filmService.findByFilmNameAndOrDirectorAndBackPopularFilms(query, by);

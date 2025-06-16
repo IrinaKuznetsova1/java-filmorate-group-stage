@@ -146,6 +146,7 @@ public class FilmService implements IntService<Film> {
             });
         }
     }
+
     public Collection<Film> findByFilmNameAndOrDirectorAndBackPopularFilms(String query, String by) {
         if (!isNotNullAndIsNotBlank(query)) {
             log.info("query = null или пустой, возвращаем пустой список");
@@ -155,8 +156,6 @@ public class FilmService implements IntService<Film> {
                 "и/или автору = {}, отсортированных по кол-ву лайков", query, by);
         return storage.findByFilmNameAndOrDirectorAndBackPopularFilms(query, by);
     }
-
-}
 
     private boolean isNotNullAndIsNotBlank(String field) {
         return field != null && !field.isBlank();

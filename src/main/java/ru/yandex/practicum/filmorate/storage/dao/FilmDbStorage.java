@@ -65,13 +65,16 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private static final String FIND_MOST_POPULAR_BY_NAME = "SELECT f.*, COUNT(ls.user_id) AS likes_count FROM films AS f " +
             "LEFT JOIN likes AS ls ON f.id = ls.film_id WHERE LOWER(f.name) LIKE LOWER(?) GROUP BY f.id ORDER BY likes_count DESC";
     private static final String FIND_MOST_POPULAR_BY_DIRECTOR = "SELECT f.*, COUNT(ls.user_id) AS likes_count " +
-            "FROM films AS f LEFT JOIN likes AS ls ON f.id = ls.film_id LEFT JOIN film_directors AS fd ON f.id = fd.film_id " +
+            "FROM films AS f LEFT JOIN likes AS ls ON f.id = ls.film_id LEFT JOIN film_director AS fd ON f.id = fd.film_id " +
             "LEFT JOIN directors AS d ON fd.director_id = d.id WHERE LOWER(d.name) LIKE LOWER(?) GROUP BY f.id " +
             "ORDER BY likes_count DESC";
-    private static final String FIND_MOST_POPULAR_BY_DIRECTOR_AND_TITLE = "SELECT f.*, COUNT(ls.user_id) AS likes_count " +
-            "FROM films AS f LEFT JOIN likes AS ls ON f.id = ls.film_id LEFT JOIN film_directors AS fd ON f.id = fd.film_id " +
-            "LEFT JOIN directors AS d ON fd.director_id = d.id WHERE (LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?)) " +
-            "GROUP BY f.id ORDER BY likes_count DESC";
+    private static final String FIND_MOST_POPULAR_BY_DIRECTOR_AND_TITLE = "SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.MPA_id " +
+            "FROM films f " +
+            "LEFT JOIN film_director fd ON f.id = fd.film_id " +
+            "LEFT JOIN directors d ON fd.director_id = d.id " +
+            "WHERE (LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?)) " +
+            "GROUP BY f.id, f.name, f.description, f.releaseDate, f.duration, f.MPA_id " +
+            "ORDER BY (SELECT COUNT(*) FROM likes WHERE film_id = f.id) DESC";
 
     @Autowired
     public FilmDbStorage(
@@ -225,29 +228,25 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             throw new IllegalArgumentException("Неверные параметры ввода, ожидаются: 'director' и/или 'title'");
         }
         Collection<Film> films = null;
-        if (components.contains("director") && components.contains("title")) {
-            log.info("Поиск одновременно по director и title");
-            films = findMany(FIND_MOST_POPULAR_BY_DIRECTOR_AND_TITLE, "%" + query.toLowerCase() + "%", "%" + query + "%");
-        } else if (components.contains("director")) {
-            log.info("Поиск только по полю director");
-            films = findMany(FIND_MOST_POPULAR_BY_DIRECTOR, "%" + query.toLowerCase() + "%");
-        } else if (components.contains("title")) {
-            log.info("Поиск только по полю title");
-            films = findMany(FIND_MOST_POPULAR_BY_NAME, "%" + query.toLowerCase() + "%");
-        }
 
-        return Optional.ofNullable(films)
-                .orElse(Collections.emptyList())
-                .stream()
-                .peek(film -> {
-                    addLikes(film);
-                    addGenres(film);
-                    //addDirectors(film); // TODO Тот, кто добавляет функционал Директора - должен написать метод addDirectors
-                    film.setMpa(mpaDb.getById(film.getMpa().getId()));
-                })
-                .collect(Collectors.toList());
+        try {
+            if (components.contains("director") && components.contains("title")) {
+                log.info("Поиск одновременно по director и title");
+                films = findMany(FIND_MOST_POPULAR_BY_DIRECTOR_AND_TITLE, "%" + query.toLowerCase() + "%", "%" + query.toLowerCase() + "%");
+            } else if (components.contains("director")) {
+                log.info("Поиск только по полю director");
+                films = findMany(FIND_MOST_POPULAR_BY_DIRECTOR, "%" + query.toLowerCase() + "%");
+            } else if (components.contains("title")) {
+                log.info("Поиск только по полю title");
+                films = findMany(FIND_MOST_POPULAR_BY_NAME, "%" + query.toLowerCase() + "%");
+            }
+        } catch (IllegalArgumentException e) {
+            log.info("Ничего не найдено по указанному поиску");
+            return Collections.emptyList();
+        }
+        films.forEach(this::loadAdditionalData);
+        return films;
     }
-}
 
     private Film loadAdditionalData(Film film) {
         likesDb.getAllByFilmId(film.getId()).forEach(film::saveId);
