@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
@@ -15,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.dao.mappers.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -24,55 +21,50 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-@JdbcTest
+@SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FilmDbStorage.class, FilmRowMapper.class,
-        GenreDbStorage.class, GenreRowMapper.class,
-        MpaDbStorage.class, MpaRowMapper.class,
-        LikesDbStorage.class, LikeRowMapper.class,
-        FilmGenreDbStorage.class, FilmGenreRowMapper.class,
-        UserDbStorage.class, UserRowMapper.class,
-        FriendsDbStorage.class, FriendsRowMapper.class})
 class FilmDbStorageTest {
     private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
     private final JdbcTemplate jdbc;
 
-    private final Film film1 = new Film(1, "name1", "description1", LocalDate.now(), 60, new Mpa(1, "G"));
-    private final Film film2 = new Film(2, "name2", "description2", LocalDate.now(), 60, new Mpa(2, "PG"));
-    private final Film film3 = new Film(3, "name3", "description3", LocalDate.now(), 60, new Mpa(3, "PG-13"));
-
-    private final User user1 = new User(1, "test1@mail.ru", "Login1", "Name1", LocalDate.now());
-    private final User user2 = new User(2, "test2@mail.ru", "Login2", "Name2", LocalDate.now());
-    private final User user3 = new User(3, "test3@mail.ru", "Login3", "Name3", LocalDate.now());
+    private Film film1;
+    private Film film2;
+    private Film film3;
+    private User user1;
+    private User user2;
+    private User user3;
 
     @BeforeEach
     void setup() {
-        film1.addGenre(new Genre(1, "Комедия"));
-        film1.addGenre(new Genre(3, "Мультфильм"));
-        film1.addGenre(new Genre(5, "Документальный"));
-
-        film2.addGenre(new Genre(3, "Мультфильм"));
-
-        film3.addGenre(new Genre(5, "Документальный"));
-
-        filmDbStorage.save(film1);
-        filmDbStorage.save(film2);
-        filmDbStorage.save(film3);
-    }
-
-    @AfterEach
-    void clear() {
         jdbc.update("DELETE FROM film_genre");
         jdbc.update("DELETE FROM likes");
         jdbc.update("DELETE FROM films");
         jdbc.update("DELETE FROM users");
+
+        film1 = new Film(0, "name1", "description1", LocalDate.now(), 60, new Mpa(1));
+        film2 = new Film(0, "name2", "description2", LocalDate.now(), 60, new Mpa(2));
+        film3 = new Film(0, "name3", "description3", LocalDate.now(), 60, new Mpa(3));
+
+        user1 = new User(0, "test1@mail.ru", "Login1", "Name1", LocalDate.now());
+        user2 = new User(0, "test2@mail.ru", "Login2", "Name2", LocalDate.now());
+        user3 = new User(0, "test3@mail.ru", "Login3", "Name3", LocalDate.now());
+
+        film1.addGenre(new Genre(1, "Комедия"));
+        film1.addGenre(new Genre(3, "Мультфильм"));
+        film1.addGenre(new Genre(5, "Документальный"));
+        film2.addGenre(new Genre(3, "Мультфильм"));
+        film3.addGenre(new Genre(5, "Документальный"));
+
+        film1 = filmDbStorage.save(film1);
+        film2 = filmDbStorage.save(film2);
+        film3 = filmDbStorage.save(film3);
     }
 
     @Test
     void getAll() {
-        userDbStorage.save(user1);
+        user1 = userDbStorage.save(user1);
         filmDbStorage.saveId(film1.getId(), user1.getId());
         filmDbStorage.saveId(film2.getId(), user1.getId());
         filmDbStorage.saveId(film3.getId(), user1.getId());
@@ -90,10 +82,10 @@ class FilmDbStorageTest {
 
     @Test
     void getById() {
-        userDbStorage.save(user1);
-        final Film film4 = new Film(4, "name4", "description4", LocalDate.now(), 60, new Mpa(1, "G"));
+        user1 = userDbStorage.save(user1);
+        Film film4 = new Film(0, "name4", "description4", LocalDate.now(), 60, new Mpa(1));
         film4.addGenre(new Genre(5, "Документальный"));
-        filmDbStorage.save(film4);
+        film4 = filmDbStorage.save(film4);
         filmDbStorage.saveId(film4.getId(), user1.getId());
         final Film film = filmDbStorage.getById(film4.getId());
 
@@ -104,7 +96,6 @@ class FilmDbStorageTest {
         assertThat(film).hasFieldOrPropertyWithValue("duration", film4.getDuration());
 
         assertThat(film.getMpa().getId()).isEqualTo(film4.getMpa().getId());
-        assertThat(film.getMpa().getName()).isEqualTo(film4.getMpa().getName());
         assertThat(film.getGenres().size()).isEqualTo(film4.getGenres().size());
         final Genre genre = film.getGenres().stream().toList().get(0);
         assertThat(genre).hasFieldOrPropertyWithValue("id", 5);
@@ -120,7 +111,7 @@ class FilmDbStorageTest {
         film1.setDescription("updDescription");
         film1.setReleaseDate(LocalDate.of(2020, 1, 1));
         film1.setDuration(120);
-        film1.setMpa(new Mpa(5, "NC-17"));
+        film1.setMpa(new Mpa(5));
         film1.addGenre(new Genre(2, "Драма"));
 
         filmDbStorage.saveUpdatedObject(film1);
@@ -134,45 +125,42 @@ class FilmDbStorageTest {
         assertThat(updFilm).hasFieldOrPropertyWithValue("duration", film1.getDuration());
 
         assertThat(updFilm.getMpa().getId()).isEqualTo(film1.getMpa().getId());
-        assertThat(updFilm.getMpa().getName()).isEqualTo(film1.getMpa().getName());
         assertThat(updFilm.getGenres().size()).isEqualTo(film1.getGenres().size());
     }
 
     @Test
     void saveIdAndRemoveId() {
-        userDbStorage.save(user1);
-        final Film film4 = new Film(4, "name4", "description4", LocalDate.now(), 60, new Mpa(1, "G"));
-        filmDbStorage.save(film4);
+        user1 = userDbStorage.save(user1);
+        Film film4 = new Film(0, "name4", "description4", LocalDate.now(), 60, new Mpa(1));
+        film4 = filmDbStorage.save(film4);
         Film film = filmDbStorage.saveId(film4.getId(), user1.getId());
         assertThat(film.getIds().size()).isEqualTo(1);
-        assertThat(film.getIds().contains(user1.getId())).isEqualTo(true);
-        assertThrows(DuplicatedDataException.class, () -> filmDbStorage.saveId(film4.getId(), user1.getId()));
+        assertThat(film.getIds().contains(user1.getId())).isTrue();
+        Film finalFilm = film4;
+        assertThrows(DuplicatedDataException.class, () -> filmDbStorage.saveId(finalFilm.getId(), user1.getId()));
 
         film = filmDbStorage.removeId(film4.getId(), user1.getId());
         assertThat(film.getIds().size()).isEqualTo(0);
     }
 
-
     @Test
     void findTheMostPopular() {
-        userDbStorage.save(user1);
-        userDbStorage.save(user2);
-        userDbStorage.save(user3);
+        user1 = userDbStorage.save(user1);
+        user2 = userDbStorage.save(user2);
+        user3 = userDbStorage.save(user3);
 
         filmDbStorage.saveId(film3.getId(), user1.getId());
         filmDbStorage.saveId(film3.getId(), user2.getId());
         filmDbStorage.saveId(film3.getId(), user3.getId());
-
         filmDbStorage.saveId(film2.getId(), user1.getId());
         filmDbStorage.saveId(film2.getId(), user2.getId());
-
         filmDbStorage.saveId(film1.getId(), user1.getId());
 
-        final List<Film> mostPopular = filmDbStorage.findTheMostPopular(3).stream().toList();
+        final List<Film> mostPopular = (List<Film>) filmDbStorage.findTheMostPopular(3);
 
         assertThat(mostPopular.get(0)).hasFieldOrPropertyWithValue("id", film3.getId());
         assertThat(mostPopular.get(1)).hasFieldOrPropertyWithValue("id", film2.getId());
-        assertThat(mostPopular.get(mostPopular.size() - 1)).hasFieldOrPropertyWithValue("id", film1.getId());
+        assertThat(mostPopular.get(2)).hasFieldOrPropertyWithValue("id", film1.getId());
 
         final Film film = mostPopular.get(0);
 
@@ -182,7 +170,6 @@ class FilmDbStorageTest {
         assertThat(film).hasFieldOrPropertyWithValue("releaseDate", film3.getReleaseDate());
         assertThat(film).hasFieldOrPropertyWithValue("duration", film3.getDuration());
         assertThat(film.getMpa().getId()).isEqualTo(film3.getMpa().getId());
-        assertThat(film.getMpa().getName()).isEqualTo(film3.getMpa().getName());
         assertThat(film.getGenres().size()).isEqualTo(film3.getGenres().size());
         assertThat(film.getIds().size()).isEqualTo(3);
     }

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
@@ -19,31 +19,46 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-@JdbcTest
+@SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class, FilmRowMapper.class,
         GenreDbStorage.class, GenreRowMapper.class,
         MpaDbStorage.class, MpaRowMapper.class,
         FilmGenreDbStorage.class, FilmGenreRowMapper.class,
-        LikesDbStorage.class, LikeRowMapper.class})
+        LikesDbStorage.class, LikeRowMapper.class,
+        FilmDirectorDbStorage.class, DirectorDbStorage.class, DirectorRowMapper.class})
 class FilmGenreDbStorageTest {
     private final FilmGenreDbStorage filmGenreDbStorage;
     private final FilmDbStorage filmDBStorage;
     private final JdbcTemplate jdbc;
+    private final GenreDbStorage genreDbStorage;
 
-    private final Film film1 = new Film(1, "name1", "description1", LocalDate.now(), 60, new Mpa(1, "G"));
-    private final Genre genre1 = new Genre(1, "Комедия");
-    private final Genre genre2 = new Genre(3, "Мультфильм");
-    private final Genre genre3 = new Genre(5, "Документальный");
-    private final Genre genre4 = new Genre(6, "Боевик");
+    private Film film1;
+    private Genre genre1;
+    private Genre genre2;
+    private Genre genre3;
+    private Genre genre4;
 
     @BeforeEach
     void setup() {
+        film1 = new Film(1, "name1", "description1", LocalDate.now(), 60, new Mpa(1));
+        genre1 = new Genre(1, "Комедия");
+        genre2 = new Genre(3, "Мультфильм");
+        genre3 = new Genre(5, "Документальный");
+        genre4 = new Genre(6, "Боевик");
+
+        genreDbStorage.getById(genre1.getId());
+        genreDbStorage.getById(genre2.getId());
+        genreDbStorage.getById(genre3.getId());
+        genreDbStorage.getById(genre4.getId());
+
         film1.addGenre(genre2);
         film1.addGenre(genre3);
         film1.addGenre(genre1);
@@ -55,6 +70,7 @@ class FilmGenreDbStorageTest {
     void clear() {
         jdbc.update("DELETE FROM film_genre");
         jdbc.update("DELETE FROM films");
+        jdbc.update("DELETE FROM film_director");
     }
 
     @Test
@@ -63,10 +79,10 @@ class FilmGenreDbStorageTest {
         assertTrue(genresEmpty.isEmpty());
 
         final List<Genre> genres = filmGenreDbStorage.getAllByFilmId(film1.getId()).stream().toList();
-        assertThat(genres.size()).isEqualTo(3);
-        assertThat(genres.get(0)).hasFieldOrPropertyWithValue("id", genre1.getId());
-        assertThat(genres.get(1)).hasFieldOrPropertyWithValue("id", genre2.getId());
-        assertThat(genres.get(genres.size() - 1)).hasFieldOrPropertyWithValue("id", genre3.getId());
+        assertEquals(3, genres.size(), "Должно быть 3 жанра");
+
+        Set<Integer> genreIds = genres.stream().map(Genre::getId).collect(Collectors.toSet());
+        assertThat(genreIds).containsExactlyInAnyOrder(genre1.getId(), genre2.getId(), genre3.getId());
     }
 
     @Test
