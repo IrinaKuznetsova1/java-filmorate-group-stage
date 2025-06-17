@@ -63,8 +63,9 @@ public class ReviewService {
         } catch (NotFoundException e) {
             throw new NotFoundException("Пользователель не найден");
         }
-        long eventId = userEventFeedDbStorage.addEventReviewAdd(review.getUserId(), review.getReviewId());
-        return reviewStorage.save(review);
+        Review createdReview = reviewStorage.save(review);
+        long eventId = userEventFeedDbStorage.addEventReviewAdd(createdReview.getUserId(), createdReview.getReviewId());
+        return createdReview;
     }
 
     public Review update(Review review) {
@@ -78,8 +79,9 @@ public class ReviewService {
         } catch (NotFoundException e) {
             throw new NotFoundException("Пользователь не найден");
         }
-        long eventId = userEventFeedDbStorage.addEventReviewUpdate(review.getUserId(), review.getReviewId());
-        return reviewStorage.saveUpdatedObject(review);
+        Review updatedReview = reviewStorage.saveUpdatedObject(review);
+        long eventId = userEventFeedDbStorage.addEventReviewUpdate(updatedReview.getUserId(), updatedReview.getReviewId());
+        return updatedReview;
     }
 
     public void deleteReview(long reviewId) {
