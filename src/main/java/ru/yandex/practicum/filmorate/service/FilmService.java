@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.UserEventFeedDbStorage;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -18,16 +19,19 @@ public class FilmService implements IntService<Film> {
     private final FilmStorage storage;
     private final UserStorage userStorage;
     private final DirectorService directorService;
+    private final UserEventFeedDbStorage userEventFeedDbStorage;
 
     @Autowired
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
             @Qualifier("userDbStorage") UserStorage userStorage,
-            DirectorService directorService
+            DirectorService directorService,
+            @Qualifier("userEventFeedDbStorage") UserEventFeedDbStorage userEventFeedDbStorage
     ) {
         this.storage = filmStorage;
         this.userStorage = userStorage;
         this.directorService = directorService;
+        this.userEventFeedDbStorage = userEventFeedDbStorage;
     }
 
     @Override
@@ -93,6 +97,7 @@ public class FilmService implements IntService<Film> {
         findById(filmId);
         userStorage.getById(userId);
         storage.saveId(filmId, userId);
+        long eventId = userEventFeedDbStorage.addEventLikeAdd(userId, filmId);
         return findById(filmId);
     }
 
@@ -102,6 +107,7 @@ public class FilmService implements IntService<Film> {
         userStorage.getById(userId);
         storage.removeId(filmId, userId);
         log.info("Пользователь id {} удалил лайк у фильма id {}.", userId, filmId);
+        long eventId = userEventFeedDbStorage.addEventLikeRemove(userId, filmId);
         return findById(filmId);
     }
 
