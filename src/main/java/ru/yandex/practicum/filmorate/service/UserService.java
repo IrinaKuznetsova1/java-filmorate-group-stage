@@ -17,6 +17,7 @@ import java.util.Collection;
 public class UserService implements IntService<User> {
     private final UserStorage storage;
     private final FilmStorage filmStorage;
+
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage storage,
                        @Qualifier("filmDbStorage") FilmStorage filmStorage) {
@@ -113,6 +114,7 @@ public class UserService implements IntService<User> {
 
     public Collection<Film> findFilmRecommendations(long userId) {
         findById(userId);
+        log.info("Поиск рекомендаций для пользователей: {}.", userId);
         return filmStorage.findRecommendations(userId);
     }
 }
