@@ -79,17 +79,17 @@ public class ReviewDbStorageTest {
         filmDbStorage.saveId(film2.getId(), user1.getId());
 
         Review review1 = new Review(1L
-                , "Test Review 1",
-                true,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 1"
+                , true
+                , user1.getId()
+                , film1.getId()
+                , 0);
         Review review2 = new Review(2L
-                , "Test Review 2",
-                false,
-                user2.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 2"
+                , false
+                , user2.getId()
+                , film1.getId()
+                , 0);
 
         reviewDbStorage.save(review1);
         reviewDbStorage.save(review2);
@@ -113,17 +113,17 @@ public class ReviewDbStorageTest {
         filmDbStorage.saveId(film2.getId(), user1.getId());
 
         Review review1 = new Review(1L
-                , "Test Review 1",
-                true,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 1"
+                , true
+                , user1.getId()
+                , film1.getId()
+                , 0);
         Review review2 = new Review(1L
-                , "Test Review 1",
-                true,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 1"
+                , true
+                , user1.getId()
+                , film1.getId()
+                , 0);
 
         Review reviewSave = reviewDbStorage.save(review1);
         review2.setReviewId(reviewSave.getReviewId());
@@ -142,24 +142,24 @@ public class ReviewDbStorageTest {
         filmDbStorage.saveId(film2.getId(), user1.getId());
 
         Review review1 = new Review(1L
-                , "Test Review 1",
-                true,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 1"
+                , true
+                , user1.getId()
+                , film1.getId()
+                , 0);
         Review review2 = new Review(1L
-                , "Test Review 2",
-                false,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 2"
+                , false
+                , user1.getId()
+                , film1.getId()
+                , 0);
 
         Review review3 = new Review(1L
-                , "Test Review 2",
-                false,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 2"
+                , false
+                , user1.getId()
+                , film1.getId()
+                , 0);
 
         Review reviewSave = reviewDbStorage.save(review1);
         review2.setReviewId(reviewSave.getReviewId());
@@ -179,17 +179,17 @@ public class ReviewDbStorageTest {
         filmDbStorage.saveId(film2.getId(), user1.getId());
 
         Review review1 = new Review(1L
-                , "Test Review 1",
-                true,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 1"
+                , true
+                , user1.getId()
+                , film1.getId()
+                , 0);
         Review review2 = new Review(2L
-                , "Test Review 2",
-                false,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 2"
+                , false
+                , user1.getId()
+                , film1.getId()
+                , 0);
 
         Review review1Save = reviewDbStorage.save(review1);
         Review review2Save = reviewDbStorage.save(review2);
@@ -211,11 +211,11 @@ public class ReviewDbStorageTest {
         filmDbStorage.saveId(film1.getId(), user1.getId());
 
         Review review1 = new Review(1L
-                , "Test Review 1",
-                true,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 1"
+                , true
+                , user1.getId()
+                , film1.getId()
+                , 0);
 
         reviewDbStorage.save(review1);
 
@@ -234,11 +234,11 @@ public class ReviewDbStorageTest {
         filmDbStorage.saveId(film1.getId(), user1.getId());
 
         Review review1 = new Review(1L
-                , "Test Review 1",
-                true,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 1"
+                , true
+                , user1.getId()
+                , film1.getId()
+                , 0);
 
         reviewDbStorage.save(review1);
 
@@ -257,11 +257,11 @@ public class ReviewDbStorageTest {
         filmDbStorage.saveId(film1.getId(), user1.getId());
 
         Review review1 = new Review(1L
-                , "Test Review 1",
-                true,
-                user1.getId(),
-                film1.getId(),
-                0);
+                , "Test Review 1"
+                , true
+                , user1.getId()
+                , film1.getId()
+                , 0);
 
         reviewDbStorage.save(review1);
 
