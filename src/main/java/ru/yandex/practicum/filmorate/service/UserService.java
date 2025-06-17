@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
@@ -14,10 +16,13 @@ import java.util.Collection;
 @Slf4j
 public class UserService implements IntService<User> {
     private final UserStorage storage;
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage storage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage storage,
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.storage = storage;
+        this.filmStorage = filmStorage;
     }
 
     public Collection<User> findAll() {
@@ -105,5 +110,11 @@ public class UserService implements IntService<User> {
 
     public void delete(long userId) {
         storage.delete(userId);
+    }
+
+    public Collection<Film> findFilmRecommendations(long userId) {
+        findById(userId);
+        log.info("Поиск рекомендаций для пользователей: {}.", userId);
+        return filmStorage.findRecommendations(userId);
     }
 }

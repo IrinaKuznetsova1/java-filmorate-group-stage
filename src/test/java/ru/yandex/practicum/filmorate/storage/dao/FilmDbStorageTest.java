@@ -215,4 +215,28 @@ class FilmDbStorageTest {
         assertThat(mostPopularWithGenreAndYear.get(1)).hasFieldOrPropertyWithValue("id", film1.getId());
         assertThat(mostPopularWithGenreAndYear.size()).isEqualTo(2);
     }
+
+    @Test
+    void findRecommendations() {
+        userDbStorage.save(user1);
+        userDbStorage.save(user2);
+        userDbStorage.save(user3);
+
+        // добавление лайков, при этом для user1 в рекомендациях должны оказаться фильмы с id 2, 3
+        filmDbStorage.saveId(film1.getId(), user1.getId());
+        filmDbStorage.saveId(film1.getId(), user2.getId());
+        filmDbStorage.saveId(film2.getId(), user2.getId());
+        filmDbStorage.saveId(film1.getId(), user3.getId());
+        filmDbStorage.saveId(film2.getId(), user3.getId());
+        filmDbStorage.saveId(film3.getId(), user3.getId());
+
+        final List<Film> recommendations = filmDbStorage.findRecommendations(1).stream().toList();
+        assertThat(recommendations.get(0)).hasFieldOrPropertyWithValue("id", film2.getId());
+        assertThat(recommendations.get(1)).hasFieldOrPropertyWithValue("id", film3.getId());
+        assertThat(recommendations.size()).isEqualTo(2);
+
+        //для фильма 3 не должно быть рекомендаций
+        final List<Film> recommendations1 = filmDbStorage.findRecommendations(3).stream().toList();
+        assertThat(recommendations1.size()).isEqualTo(0);
+    }
 }
