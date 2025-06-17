@@ -47,13 +47,13 @@ CREATE TABLE IF NOT EXISTS reviews (
     review_id bigint primary key auto_increment,
     content varchar(200) NOT NULL,
     is_positive boolean NOT NULL,
-    user_id bigint REFERENCES users(id),
-    film_id bigint REFERENCES films(id)
+    user_id bigint REFERENCES users(id) ON DELETE CASCADE,
+    film_id bigint REFERENCES films(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS useful_tab (
-    review_id bigint REFERENCES reviews(review_id),
-    user_id bigint REFERENCES users(id),
+    review_id bigint REFERENCES reviews(review_id) ON DELETE CASCADE,
+    user_id bigint REFERENCES users(id) ON DELETE CASCADE,
     useful_flag integer NOT NULL
 );
 
