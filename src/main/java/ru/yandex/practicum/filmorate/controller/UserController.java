@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.annotations.Marker;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dto.UserEventFeedDto;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -82,6 +83,12 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") long id) {
         userService.delete(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<UserEventFeedDto> showEventFeedOfUser(@PathVariable @Min(1) long id) {
+        log.info("Получен запрос на вывод Ленты событий пользователя: GET/users/{}/feed.", id);
+        return userService.showEventFeedOfUser(id);
     }
 }
 

@@ -4,25 +4,32 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.UserEventFeedDto;
 import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.mapper.UserEventFeedDtoMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.UserEventFeedDbStorage;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class UserService implements IntService<User> {
     private final UserStorage storage;
     private final FilmStorage filmStorage;
+    private final UserEventFeedDbStorage userEventFeedDbStorage;
 
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage storage,
-                       @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userEventFeedDbStorage") UserEventFeedDbStorage userEventFeedDbStorage) {
         this.storage = storage;
         this.filmStorage = filmStorage;
+        this.userEventFeedDbStorage = userEventFeedDbStorage;
     }
 
     public Collection<User> findAll() {
@@ -82,6 +89,7 @@ public class UserService implements IntService<User> {
         }
         findById(userId);
         findById(friendId);
+        long eventId = userEventFeedDbStorage.addEventFriendAdd(userId, friendId);
         final User user = storage.saveId(userId, friendId);
         log.info("Пользователь id {} добавил в друзья пользователя с id {}.", userId, friendId);
         return user;
@@ -92,6 +100,7 @@ public class UserService implements IntService<User> {
         findById(friendId);
         final User user = storage.removeId(userId, friendId);
         log.info("Пользователь id {} удалил из друзей пользователя с id {}.", userId, friendId);
+        long eventId = userEventFeedDbStorage.addEventFriendRemove(userId, friendId);
         return user;
     }
 
@@ -116,5 +125,14 @@ public class UserService implements IntService<User> {
         findById(userId);
         log.info("Поиск рекомендаций для пользователей: {}.", userId);
         return filmStorage.findRecommendations(userId);
+    }
+
+    public Collection<UserEventFeedDto> showEventFeedOfUser(long id) {
+        log.info("Проверяем, что пользователь существует");
+        findById(id);
+        log.info("Передаем запрос вывода Ленты событий пользователя в репозиторий");
+        return userEventFeedDbStorage.showEventFeedOfUser(id).stream()
+                .map(UserEventFeedDtoMapper::mapToUserEventFeedDto)
+                .collect(Collectors.toList());
     }
 }
