@@ -32,11 +32,9 @@ public class UserEventFeedDbStorage extends BaseDbStorage<UserEventFeed> {
             "LEFT JOIN eventType AS et ON uef.event_type_id = et.id " +
             "LEFT JOIN operationType AS ot ON uef.operation_id = ot.id " +
             "WHERE uef.user_id = ? " +
-            "ORDER BY uef.timeline DESC";
+            "ORDER BY uef.timeline";
     private static final String INSERT_EVENT = "INSERT INTO userEventFeed (user_id, timeline, event_type_id, operation_id, entity_id) " +
             "VALUES (?, ?, ?, ?, ?)";
-
-    Long timeStamp = Instant.now().toEpochMilli();
 
     public Collection<UserEventFeed> showEventFeedOfUser(long id) {
         log.info("Отправляем запрос в репозиторий");
@@ -45,36 +43,36 @@ public class UserEventFeedDbStorage extends BaseDbStorage<UserEventFeed> {
 
     public long addEventLikeRemove(Long userId, Long filmId) {
         log.info("Сохраняем, что пользователь с id {} удалил лайк фильму {}", userId, filmId);
-        return insert(INSERT_EVENT, userId, timeStamp, 1, 1, filmId);
+        return insert(INSERT_EVENT, userId, Instant.now().toEpochMilli(), 1, 1, filmId);
     }
 
     public long addEventLikeAdd(Long userId, Long filmId) {
         log.info("Сохраняем, что пользователь с id {} добавил лайк фильму {}", userId, filmId);
-        return insert(INSERT_EVENT, userId, timeStamp, 1, 2, filmId);
+        return insert(INSERT_EVENT, userId, Instant.now().toEpochMilli(), 1, 2, filmId);
     }
 
     public long addEventReviewRemove(Long userId, Long reviewId) {
         log.info("Сохраняем, что пользователь с id {} удалил ревью {}", userId, reviewId);
-        return insert(INSERT_EVENT, userId, timeStamp, 2, 1, reviewId);
+        return insert(INSERT_EVENT, userId, Instant.now().toEpochMilli(), 2, 1, reviewId);
     }
 
     public long addEventReviewAdd(Long userId, Long reviewId) {
         log.info("Сохраняем, что пользователь с id {} добавил ревью {}", userId, reviewId);
-        return insert(INSERT_EVENT, userId, timeStamp, 2, 2, reviewId);
+        return insert(INSERT_EVENT, userId, Instant.now().toEpochMilli(), 2, 2, reviewId);
     }
 
     public long addEventReviewUpdate(Long userId, Long reviewId) {
         log.info("Сохраняем, что пользователь с id {} обновил ревью {}", userId, reviewId);
-        return insert(INSERT_EVENT, userId, timeStamp, 2, 3, reviewId);
+        return insert(INSERT_EVENT, userId, Instant.now().toEpochMilli(), 2, 3, reviewId);
     }
 
     public long addEventFriendRemove(Long userId, Long friendId) {
         log.info("Сохраняем, что пользователь с id {} удалил из друзей пользователя с id {}", userId, friendId);
-        return insert(INSERT_EVENT, userId, timeStamp, 3, 1, friendId);
+        return insert(INSERT_EVENT, userId, Instant.now().toEpochMilli(), 3, 1, friendId);
     }
 
     public long addEventFriendAdd(Long userId, Long friendId) {
         log.info("Сохраняем, что пользователь с id {} добавил в друзья пользователя с id {}", userId, friendId);
-        return insert(INSERT_EVENT, userId, timeStamp, 3, 2, friendId);
+        return insert(INSERT_EVENT, userId, Instant.now().toEpochMilli(), 3, 2, friendId);
     }
 }
