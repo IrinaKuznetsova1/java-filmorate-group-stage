@@ -58,13 +58,13 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable @Min(1) long id, @PathVariable @Min(1) long userId) {
+    public Film addLike(@PathVariable long id, @PathVariable long userId) {
         log.info("Получен запрос PUT/films/{}/like/{}.", id, userId);
         return filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public Film deleteLike(@PathVariable @Min(1) long id, @PathVariable @Min(1) long userId) {
+    public Film deleteLike(@PathVariable long id, @PathVariable long userId) {
         log.info("Получен запрос DELETE/films/{}/like/{}.", id, userId);
         return filmService.deleteLike(id, userId);
     }

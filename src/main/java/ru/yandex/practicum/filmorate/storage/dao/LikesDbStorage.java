@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.dao.mappers.LikeRowMapper;
 
@@ -53,8 +52,7 @@ public class LikesDbStorage extends BaseDbStorage<Long> {
     }
 
     public void saveId(long filmId, long userId) {
-        if (getByIds(filmId, userId).isPresent())
-            throw new DuplicatedDataException("Пользователь: " + userId + " уже поставил лайк фильму: " + filmId, "user_id");
+        if (getByIds(filmId, userId).isPresent()) return;
         insert(INSERT_QUERY, filmId, userId);
         log.info("Объект сохранен в таблицу likes.");
     }

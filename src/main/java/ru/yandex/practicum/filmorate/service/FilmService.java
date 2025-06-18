@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.UserEventFeedDbStorage;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -50,6 +50,10 @@ public class FilmService implements IntService<Film> {
     public Film create(Film film) {
         log.info("Получен запрос на создание нового фильма");
         validateDirectors(film);
+        final List<Genre> genres = new ArrayList<>(film.getGenres());
+        genres.sort(Comparator.comparing(Genre::getId));
+        film.getGenres().clear();
+        film.setGenres(new LinkedHashSet<>(genres));
         return storage.save(film);
     }
 
@@ -79,12 +83,14 @@ public class FilmService implements IntService<Film> {
             oldFilm.setMpa(newFilm.getMpa());
         }
 
-        if (newFilm.getGenres() != null && !newFilm.getGenres().isEmpty()) {
+        if (newFilm.getGenres() != null) {
             oldFilm.getGenres().clear();
-            newFilm.getGenres().forEach(oldFilm::addGenre);
+            final List<Genre> newGenres = new ArrayList<>(newFilm.getGenres());
+            newGenres.sort(Comparator.comparing(Genre::getId));
+            oldFilm.setGenres(new LinkedHashSet<>(newGenres));
         }
 
-        if (newFilm.getDirectors() != null && !newFilm.getDirectors().isEmpty()) {
+        if (newFilm.getDirectors() != null) {
             oldFilm.getDirectors().clear();
             newFilm.getDirectors().forEach(oldFilm::addDirector);
         }

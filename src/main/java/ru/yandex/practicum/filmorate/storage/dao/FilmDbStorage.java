@@ -33,10 +33,10 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "GROUP BY FILM_ID ) AS mp " +
             "ON mp.film_id = f.id " +
             "WHERE (? IS NULL OR EXTRACT (YEAR from f.releaseDate) = ?) " +
-            "AND f.id IN ( " +
+            "AND (? IS NULL OR f.id IN ( " +
             "SELECT film_id " +
             "FROM film_genre " +
-            "WHERE ? IS NULL OR genre_id = ?) " +
+            "WHERE genre_id = ?)) " +
             "ORDER BY mp.count_likes DESC " +
             "LIMIT ?";
     private static final String FIND_BY_DIRECTOR_SORTED_BY_LIKES = "SELECT f.* FROM films f " +
@@ -159,19 +159,16 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         film.setMpa(mpaDb.getById(film.getMpa().getId()));
 
         //проверка списка genres
-        if (!film.getGenres().isEmpty()) {
-            film.getGenres().forEach(genre -> genre.setName(genreDb.getNameById(genre.getId()))); //getNameById() проверит корректность genre.id и вернет genre.name);
+        film.getGenres().forEach(genre -> genre.setName(genreDb.getNameById(genre.getId()))); //getNameById() проверит корректность genre.id и вернет genre.name);
 
-            //если id жанров указаны верно, то в film_genre удалить старые жанры и добавить новые, добавить в film genre c корректным genre.name
-            filmGenreDb.removeGenresByFilmId(film.getId());
-            film.getGenres().forEach(genre -> filmGenreDb.saveId(film.getId(), genre.getId()));
-        }
+        //если id жанров указаны верно, то в film_genre удалить старые жанры и добавить новые, добавить в film genre c корректным genre.name
+        filmGenreDb.removeGenresByFilmId(film.getId());
+        film.getGenres().forEach(genre -> filmGenreDb.saveId(film.getId(), genre.getId()));
 
         // обновить режиссеров
-        if (!film.getDirectors().isEmpty()) {
-            filmDirectorDb.removeDirectorsFromFilm(film.getId());
-            film.getDirectors().forEach(director -> filmDirectorDb.addDirectorToFilm(film.getId(), director.getId()));
-        }
+        filmDirectorDb.removeDirectorsFromFilm(film.getId());
+        film.getDirectors().forEach(director -> filmDirectorDb.addDirectorToFilm(film.getId(), director.getId()));
+
 
         update(
                 UPDATE_QUERY,
@@ -183,7 +180,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                 film.getId()
         );
 
-        return loadAdditionalData(film);
+        return film;
     }
 
     @Override
