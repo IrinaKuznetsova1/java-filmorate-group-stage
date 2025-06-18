@@ -127,14 +127,11 @@ public class FilmService implements IntService<Film> {
         log.info("Получен запрос на получение фильмов режиссера {} с сортировкой по {}", directorId, sortBy);
         directorService.findById(directorId);
 
-        switch (sortBy.toLowerCase()) {
-            case "likes":
-                return storage.getFilmsByDirectorSortedByLikes(directorId);
-            case "year":
-                return storage.getFilmsByDirectorSortedByYear(directorId);
-            default:
-                throw new ValidationException("Параметр sortBy должен быть либо 'likes', либо 'year'");
-        }
+        return switch (sortBy.toLowerCase()) {
+            case "likes" -> storage.getFilmsByDirectorSortedByLikes(directorId);
+            case "year" -> storage.getFilmsByDirectorSortedByYear(directorId);
+            default -> throw new ValidationException("Параметр sortBy должен быть либо 'likes', либо 'year'");
+        };
     }
 
     public Collection<Film> findCommonFilms(long userId, long friendId) {
