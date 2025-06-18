@@ -250,7 +250,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                 log.info("Поиск только по полю title");
                 films = findMany(FIND_MOST_POPULAR_BY_NAME, "%" + query.toLowerCase() + "%");
             }
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             log.info("Ничего не найдено по указанному поиску");
             return Collections.emptyList();
         }

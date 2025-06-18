@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.UserEventFeed;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.UserEventFeedDbStorage;
@@ -26,7 +27,7 @@ public class FilmService implements IntService<Film> {
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
             @Qualifier("userDbStorage") UserStorage userStorage,
             DirectorService directorService,
-            @Qualifier("userEventFeedDbStorage") UserEventFeedDbStorage userEventFeedDbStorage
+            UserEventFeedDbStorage userEventFeedDbStorage
     ) {
         this.storage = filmStorage;
         this.userStorage = userStorage;
@@ -103,7 +104,7 @@ public class FilmService implements IntService<Film> {
         findById(filmId);
         userStorage.getById(userId);
         storage.saveId(filmId, userId);
-        long eventId = userEventFeedDbStorage.addEventLikeAdd(userId, filmId);
+        long eventId = userEventFeedDbStorage.addEvent(userId, filmId, UserEventFeed.EventType.LIKE, UserEventFeed.Operation.ADD);
         return findById(filmId);
     }
 
@@ -113,7 +114,7 @@ public class FilmService implements IntService<Film> {
         userStorage.getById(userId);
         storage.removeId(filmId, userId);
         log.info("Пользователь id {} удалил лайк у фильма id {}.", userId, filmId);
-        long eventId = userEventFeedDbStorage.addEventLikeRemove(userId, filmId);
+        long eventId = userEventFeedDbStorage.addEvent(userId, filmId, UserEventFeed.EventType.LIKE, UserEventFeed.Operation.REMOVE);
         return findById(filmId);
     }
 

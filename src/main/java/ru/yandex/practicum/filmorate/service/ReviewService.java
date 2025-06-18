@@ -2,10 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.UserEventFeed;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -24,7 +24,7 @@ public class ReviewService {
     private final UserEventFeedDbStorage userEventFeedDbStorage;
 
     public ReviewService(ReviewStorage reviewStorage, FilmStorage filmStorage, UserStorage userStorage,
-                         @Qualifier("userEventFeedDbStorage") UserEventFeedDbStorage userEventFeedDbStorage) {
+                         UserEventFeedDbStorage userEventFeedDbStorage) {
         this.reviewStorage = reviewStorage;
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
@@ -72,7 +72,8 @@ public class ReviewService {
             throw new NotFoundException("Пользователель не найден");
         }
         Review createdReview = reviewStorage.save(review);
-        userEventFeedDbStorage.addEventReviewAdd(createdReview.getUserId(), createdReview.getReviewId());
+        userEventFeedDbStorage.addEvent(createdReview.getUserId(), createdReview.getReviewId(),
+                UserEventFeed.EventType.REVIEW, UserEventFeed.Operation.ADD);
         return createdReview;
     }
 
@@ -92,13 +93,15 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         Review updatedReview = reviewStorage.saveUpdatedObject(review);
-        userEventFeedDbStorage.addEventReviewUpdate(updatedReview.getUserId(), updatedReview.getReviewId());
+        userEventFeedDbStorage.addEvent(updatedReview.getUserId(), updatedReview.getReviewId(),
+                UserEventFeed.EventType.REVIEW, UserEventFeed.Operation.UPDATE);
         return updatedReview;
     }
 
     public void deleteReview(long reviewId) {
         Review review = findById(reviewId);
-        userEventFeedDbStorage.addEventReviewRemove(review.getUserId(), reviewId);
+        userEventFeedDbStorage.addEvent(review.getUserId(), reviewId,
+                UserEventFeed.EventType.REVIEW, UserEventFeed.Operation.REMOVE);
         reviewStorage.remove(reviewId);
     }
 
