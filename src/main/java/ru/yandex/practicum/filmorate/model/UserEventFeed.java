@@ -1,8 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,26 +11,22 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserEventFeed {
 
-    @NotNull
-    @Positive
     private Long eventId;
-
-    @NotNull
-    @Positive
     private Long userId;
-
-    @NotNull
-    @Positive
     private Long timestamp;
+    private EventType eventType;
+    private Operation operation;
+    private Long entityId;  //Идентификатор сущности, с которой произошло событие -> friend_id, film_id, review_id
 
-    @Pattern(regexp = "^(LIKE|REVIEW|FRIEND)$", message = "eventType может быть только LIKE, REVIEW или FRIEND")
-    private String eventType;
+    public enum EventType {
+        LIKE,
+        REVIEW,
+        FRIEND
+    }
 
-    @Pattern(regexp = "^(REMOVE|ADD|UPDATE)$", message = "operation может быть только REMOVE, ADD или UPDATE")
-    private String operation;
-
-    //Идентификатор сущности, с которой произошло событие -> friend_id, film_id, review_id
-    @NotNull
-    @Positive
-    private Long entityId;
+    public enum Operation {
+        REMOVE,
+        ADD,
+        UPDATE
+    }
 }

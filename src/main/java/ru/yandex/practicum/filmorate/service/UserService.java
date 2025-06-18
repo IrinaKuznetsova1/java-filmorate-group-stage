@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.mapper.UserEventFeedDtoMapper;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.UserEventFeed;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.UserEventFeedDbStorage;
@@ -26,7 +27,7 @@ public class UserService implements IntService<User> {
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage storage,
                        @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userEventFeedDbStorage") UserEventFeedDbStorage userEventFeedDbStorage) {
+                       UserEventFeedDbStorage userEventFeedDbStorage) {
         this.storage = storage;
         this.filmStorage = filmStorage;
         this.userEventFeedDbStorage = userEventFeedDbStorage;
@@ -89,7 +90,7 @@ public class UserService implements IntService<User> {
         }
         findById(userId);
         findById(friendId);
-        long eventId = userEventFeedDbStorage.addEventFriendAdd(userId, friendId);
+        long eventId = userEventFeedDbStorage.addEvent(userId, friendId, UserEventFeed.EventType.FRIEND, UserEventFeed.Operation.ADD);
         final User user = storage.saveId(userId, friendId);
         log.info("Пользователь id {} добавил в друзья пользователя с id {}.", userId, friendId);
         return user;
@@ -100,7 +101,7 @@ public class UserService implements IntService<User> {
         findById(friendId);
         final User user = storage.removeId(userId, friendId);
         log.info("Пользователь id {} удалил из друзей пользователя с id {}.", userId, friendId);
-        long eventId = userEventFeedDbStorage.addEventFriendRemove(userId, friendId);
+        long eventId = userEventFeedDbStorage.addEvent(userId, friendId, UserEventFeed.EventType.FRIEND, UserEventFeed.Operation.REMOVE);
         return user;
     }
 

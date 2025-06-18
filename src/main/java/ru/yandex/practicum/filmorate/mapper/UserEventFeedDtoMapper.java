@@ -12,8 +12,8 @@ public class UserEventFeedDtoMapper {
         UserEventFeedDto userEventFeedDto = new UserEventFeedDto();
         userEventFeedDto.setTimestamp(userEventFeed.getTimestamp());
         userEventFeedDto.setUserId(userEventFeed.getUserId());
-        userEventFeedDto.setEventType(userEventFeed.getEventType());
-        userEventFeedDto.setOperation(userEventFeed.getOperation());
+        userEventFeedDto.setEventType(userEventFeed.getEventType().toString());
+        userEventFeedDto.setOperation(userEventFeed.getOperation().toString());
         userEventFeedDto.setEventId(userEventFeed.getEventId());
         userEventFeedDto.setEntityId(userEventFeed.getEntityId());
 

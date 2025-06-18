@@ -68,22 +68,12 @@ CREATE TABLE IF NOT EXISTS film_director (
     PRIMARY KEY (film_id, director_id)
 );
 
-CREATE TABLE IF NOT EXISTS eventType (
-    id INTEGER primary key auto_increment,
-    name varchar(40) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS operationType (
-    id INTEGER primary key auto_increment,
-    name varchar(40) NOT NULL UNIQUE
-);
-
 --создание таблицы "Ленты событий" пользователя
 CREATE TABLE IF NOT EXISTS userEventFeed (
     event_id BIGINT PRIMARY KEY auto_increment,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     timeline BIGINT NOT NULL,
-    event_type_id INTEGER NOT NULL REFERENCES eventType(id) ON DELETE CASCADE,
-    operation_id INTEGER NOT NULL REFERENCES operationType(id) ON DELETE CASCADE,
+    event_type VARCHAR(10) NOT NULL,
+    operation VARCHAR(10) NOT NULL,
     entity_id BIGINT NOT NULL
 );
