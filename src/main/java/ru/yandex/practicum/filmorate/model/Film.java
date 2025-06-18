@@ -4,14 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.annotations.Marker;
 import ru.yandex.practicum.filmorate.annotations.MinReleaseDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -37,10 +35,8 @@ public class Film extends StorageData {
     @NotNull(groups = Marker.OnCreate.class, message = "возрастной рейтинг должен быть указан")
     private Mpa mpa;
 
-    @Getter
-    @Setter
-    private Set<Director> directors = new HashSet<>();
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Director> directors = new LinkedHashSet<>();
+    private Set<Genre> genres = new LinkedHashSet<>();
 
     public Film(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
         this.id = id;

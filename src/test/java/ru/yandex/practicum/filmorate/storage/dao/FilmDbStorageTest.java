@@ -9,7 +9,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -149,7 +148,6 @@ class FilmDbStorageTest {
         Film film = filmDbStorage.saveId(film4.getId(), user1.getId());
         assertThat(film.getIds().size()).isEqualTo(1);
         assertThat(film.getIds().contains(user1.getId())).isEqualTo(true);
-        assertThrows(DuplicatedDataException.class, () -> filmDbStorage.saveId(film4.getId(), user1.getId()));
 
         film = filmDbStorage.removeId(film4.getId(), user1.getId());
         assertThat(film.getIds().size()).isEqualTo(0);

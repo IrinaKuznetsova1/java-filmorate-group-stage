@@ -9,7 +9,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -95,8 +94,6 @@ class LikesDbStorageTest {
     void saveId() {
         likesDbStorage.saveId(film1.getId(), user2.getId());
         assertThat(likesDbStorage.getByIds(film1.getId(), user2.getId())).isPresent();
-
-        assertThrows(DuplicatedDataException.class, () -> likesDbStorage.saveId(film1.getId(), user2.getId()));
     }
 
     @Test

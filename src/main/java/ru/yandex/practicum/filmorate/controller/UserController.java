@@ -69,13 +69,13 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable @Min(1) long id, @PathVariable @Min(1) long friendId) {
+    public User addFriend(@PathVariable long id, @PathVariable long friendId) {
         log.info("Получен запрос PUT/users/{}/friends/{}.", id, friendId);
         return userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable @Min(1) long id, @PathVariable @Min(1) long friendId) {
+    public User deleteFriend(@PathVariable long id, @PathVariable long friendId) {
         log.info("Получен запрос DELETE/users/{}/friends/{}.", id, friendId);
         return userService.deleteFriend(id, friendId);
     }
