@@ -52,9 +52,10 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 
 CREATE TABLE IF NOT EXISTS useful_tab (
-    review_id bigint REFERENCES reviews(review_id) ON DELETE CASCADE,
-    user_id bigint REFERENCES users(id) ON DELETE CASCADE,
-    useful_flag integer NOT NULL
+    review_id bigint NOT NULL REFERENCES reviews(review_id) ON DELETE CASCADE,
+    user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    useful_flag integer NOT NULL,
+    PRIMARY KEY (review_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS directors (

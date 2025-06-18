@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.UserEventFeed;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -32,19 +31,10 @@ public class ReviewService {
     }
 
     public Collection<Review> findReviews(Long filmId, int count) {
-        Collection<Review> reviews;
-        if (filmId == null) {
-            reviews = reviewStorage.findReviews(filmId, count);
-        } else {
-            try {
-                filmStorage.getById(filmId);
-                reviews = reviewStorage.findReviews(filmId, count);
-            } catch (NotFoundException e) {
-                throw new NotFoundException("Фильм не найден");
-            }
+        if (filmId != null) {
+            filmStorage.getById(filmId);
         }
-
-        return reviews;
+        return reviewStorage.findReviews(filmId, count);
     }
 
     public Review findById(long id) {
@@ -61,16 +51,13 @@ public class ReviewService {
         Optional.ofNullable(review.getContent())
                 .orElseThrow(() -> new ValidationException("Content не может быть null"));
 
-        try {
+        if (review.getFilmId() != null) {
             filmStorage.getById(review.getFilmId());
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Фильм не найден");
         }
-        try {
+        if (review.getUserId() != null) {
             userStorage.getById(review.getUserId());
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Пользователель не найден");
         }
+
         Review createdReview = reviewStorage.save(review);
         userEventFeedDbStorage.addEvent(createdReview.getUserId(), createdReview.getReviewId(),
                 UserEventFeed.EventType.REVIEW, UserEventFeed.Operation.ADD);
@@ -87,10 +74,8 @@ public class ReviewService {
         Optional.ofNullable(review.getContent())
                 .orElseThrow(() -> new ValidationException("Content не может быть null"));
 
-        Optional.ofNullable(filmStorage.getById(review.getFilmId()))
-                .orElseThrow(() -> new NotFoundException("Фильм не найден"));
-        Optional.ofNullable(userStorage.getById(review.getUserId()))
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        filmStorage.getById(review.getFilmId());
+        userStorage.getById(review.getUserId());
 
         Review updatedReview = reviewStorage.saveUpdatedObject(review);
         userEventFeedDbStorage.addEvent(updatedReview.getUserId(), updatedReview.getReviewId(),
@@ -106,37 +91,29 @@ public class ReviewService {
     }
 
     public void addLike(long reviewId, long userId) {
-        Optional.ofNullable(reviewStorage.getById(reviewId))
-                .orElseThrow(() -> new NotFoundException("Отзыв не найден"));
-        Optional.ofNullable(userStorage.getById(userId))
-                .orElseThrow(() -> new NotFoundException("Пользователель не найден"));
+        reviewStorage.getById(reviewId);
+        userStorage.getById(userId);
 
         reviewStorage.saveLike(reviewId, userId);
     }
 
     public void addDislike(long reviewId, long userId) {
-        Optional.ofNullable(reviewStorage.getById(reviewId))
-                .orElseThrow(() -> new NotFoundException("Отзыв не найден"));
-        Optional.ofNullable(userStorage.getById(userId))
-                .orElseThrow(() -> new NotFoundException("Пользователель не найден"));
+        reviewStorage.getById(reviewId);
+        userStorage.getById(userId);
 
         reviewStorage.saveDislike(reviewId, userId);
     }
 
     public void removeUserLike(long reviewId, long userId) {
-        Optional.ofNullable(reviewStorage.getById(reviewId))
-                .orElseThrow(() -> new NotFoundException("Отзыв не найден"));
-        Optional.ofNullable(userStorage.getById(userId))
-                .orElseThrow(() -> new NotFoundException("Пользователель не найден"));
+        reviewStorage.getById(reviewId);
+        userStorage.getById(userId);
 
         reviewStorage.removeUserLike(reviewId, userId);
     }
 
     public void removeUserDislike(long reviewId, long userId) {
-        Optional.ofNullable(reviewStorage.getById(reviewId))
-                .orElseThrow(() -> new NotFoundException("Отзыв не найден"));
-        Optional.ofNullable(userStorage.getById(userId))
-                .orElseThrow(() -> new NotFoundException("Пользователель не найден"));
+        reviewStorage.getById(reviewId);
+        userStorage.getById(userId);
 
         reviewStorage.removeUserLike(reviewId, userId);
     }

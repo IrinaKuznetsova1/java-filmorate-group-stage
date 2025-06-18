@@ -58,8 +58,10 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
             ", is_positive = ?" +
             "WHERE review_id = ?";
     private static final String DELETE_QUERY = "DELETE FROM reviews WHERE review_id = ?";
-    private static final String INSERT_LIKE_REVIEW_QUERY = "INSERT INTO useful_tab(review_id, user_id, useful_flag) " +
-            "VALUES (?, ?, ?)";
+
+    private static final String INSERT_LIKE_REVIEW_QUERY = "MERGE into useful_tab(review_id, user_id, useful_flag) " +
+            "KEY(review_id, user_id) " +
+            "values (?, ?, ?)";
 
     private static final String DELETE_USER_LIKE_QUERY = "DELETE FROM useful_tab WHERE review_id = ? and user_id = ?";
 
@@ -127,21 +129,23 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
     @Override
     public void saveLike(long reviewId, long userId) {
         log.info("Добавление лайка пользователя {} на отзыв с id {}.", userId, reviewId);
-        delete(DELETE_USER_LIKE_QUERY, reviewId, userId);
-        update(INSERT_LIKE_REVIEW_QUERY,
+        merge(
+                INSERT_LIKE_REVIEW_QUERY,
                 reviewId,
                 userId,
-                1);
+                1
+        );
     }
 
     @Override
     public void saveDislike(long reviewId, long userId) {
         log.info("Добавление дизлайка пользователя {} на отзыв с id {}.", userId, reviewId);
-        delete(DELETE_USER_LIKE_QUERY, reviewId, userId);
-        update(INSERT_LIKE_REVIEW_QUERY,
+        merge(
+                INSERT_LIKE_REVIEW_QUERY,
                 reviewId,
                 userId,
-                -1);
+                -1
+        );
     }
 
     public void removeUserLike(long reviewId, long userId) {
