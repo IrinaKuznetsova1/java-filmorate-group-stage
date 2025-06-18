@@ -56,8 +56,6 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
             "LIMIT ?";
     private static final String UPDATE_QUERY = "UPDATE reviews SET content = ?" +
             ", is_positive = ?" +
-            ", user_id = ? " +
-            ", film_id = ? " +
             "WHERE review_id = ?";
     private static final String DELETE_QUERY = "DELETE FROM reviews WHERE review_id = ?";
     private static final String INSERT_LIKE_REVIEW_QUERY = "INSERT INTO useful_tab(review_id, user_id, useful_flag) " +
@@ -99,8 +97,10 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
     @Override
     public Review getById(long id) {
         final Optional<Review> reviewOptional = findOne(FIND_BY_ID_QUERY, id);
-        if (reviewOptional.isEmpty())
+
+        if (reviewOptional.isEmpty()) {
             throw new NotFoundException("Отзыв с id " + id + " не найден.");
+        }
 
         log.info("Получен объект из reviews с id: {}.", id);
         return reviewOptional.get();
@@ -112,13 +112,11 @@ public class ReviewDbStorage extends BaseDbStorage<Review> implements ReviewStor
                 UPDATE_QUERY,
                 review.getContent(),
                 review.getIsPositive(),
-                review.getUserId(),
-                review.getFilmId(),
                 review.getReviewId()
         );
 
         log.info("Обновлен объект из reviews с id: {}.", review.getReviewId());
-        return review;
+        return getById(review.getReviewId());
     }
 
     public void remove(long reviewId) {

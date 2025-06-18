@@ -16,4 +16,5 @@ public class Review {
     private Long userId;
     private Long filmId;
     private long useful = 0;
+
 }
