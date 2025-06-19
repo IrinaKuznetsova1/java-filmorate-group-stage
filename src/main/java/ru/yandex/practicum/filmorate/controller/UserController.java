@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.annotations.Marker;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dto.UserEventFeedDto;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -45,6 +47,12 @@ public class UserController {
         return userService.findCommonFriends(id, otherId);
     }
 
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> findFilmRecommendations(@PathVariable @Min(1) long id) {
+        log.info("Получен запрос GET/users/{}/recommendations.", id);
+        return userService.findFilmRecommendations(id);
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     @Validated({Marker.OnCreate.class})
@@ -61,15 +69,26 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable @Min(1) long id, @PathVariable @Min(1) long friendId) {
+    public User addFriend(@PathVariable long id, @PathVariable long friendId) {
         log.info("Получен запрос PUT/users/{}/friends/{}.", id, friendId);
         return userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable @Min(1) long id, @PathVariable @Min(1) long friendId) {
+    public User deleteFriend(@PathVariable long id, @PathVariable long friendId) {
         log.info("Получен запрос DELETE/users/{}/friends/{}.", id, friendId);
         return userService.deleteFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable("id") long id) {
+        userService.delete(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<UserEventFeedDto> showEventFeedOfUser(@PathVariable @Min(1) long id) {
+        log.info("Получен запрос на вывод Ленты событий пользователя: GET/users/{}/feed.", id);
+        return userService.showEventFeedOfUser(id);
     }
 }
 

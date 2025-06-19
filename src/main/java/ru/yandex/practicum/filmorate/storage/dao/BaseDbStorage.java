@@ -43,6 +43,10 @@ public class BaseDbStorage<T> {
         }
     }
 
+    protected void merge(String query, Object... params) {
+        jdbc.update(query, params);
+    }
+
     protected long insert(String query, Object... params) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {

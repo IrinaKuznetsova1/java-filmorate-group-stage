@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.annotations.Marker;
 import ru.yandex.practicum.filmorate.annotations.MinReleaseDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -35,7 +35,8 @@ public class Film extends StorageData {
     @NotNull(groups = Marker.OnCreate.class, message = "возрастной рейтинг должен быть указан")
     private Mpa mpa;
 
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Director> directors = new LinkedHashSet<>();
+    private Set<Genre> genres = new LinkedHashSet<>();
 
     public Film(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
         this.id = id;
@@ -48,5 +49,9 @@ public class Film extends StorageData {
 
     public void addGenre(Genre genre) {
         genres.add(genre);
+    }
+
+    public void addDirector(Director director) {
+        directors.add(director);
     }
 }
